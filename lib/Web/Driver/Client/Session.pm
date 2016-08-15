@@ -1,6 +1,7 @@
 package Web::Driver::Client::Session;
 use strict;
 use warnings;
+our $VERSION = '1.0';
 
 sub new_from_connection_and_session_id ($$$) {
   return bless {connection => $_[1], session_id => $_[2]}, $_[0];
@@ -38,3 +39,12 @@ sub close ($) {
 } # close
 
 1;
+
+=head1 LICENSE
+
+Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
