@@ -1,0 +1,41 @@
+=head1 
+
+XXX
+
+=head1 DEPENDENCY
+
+The module requires Perl 5.8 or later.
+
+It requires modules from following repositories, which are submodules
+of this Git repository:
+
+=over 4
+
+=item the perl-web-datetime repository <https://github.com/manakai/perl-web-datetime>
+
+=item the perl-web-encodings repository <https://github.com/manakai/perl-web-encodings>
+
+=item the perl-web-resources repository <https://github.com/manakai/perl-web-resource>
+
+=item the perl-web-url repository <https://github.com/manakai/perl-web-url>
+
+=item the perl-charclass repository <https://github.com/manakai/perl-charclass>
+
+=item the perl-json-ps repository <https://github.com/manakai/perl-json-ps>
+
+=item the perl-promise repository <https://github.com/wakaba/perl-promise>
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>
+
+=head1 LICENSE
+
+Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

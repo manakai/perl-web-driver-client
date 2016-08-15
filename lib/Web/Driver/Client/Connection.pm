@@ -1,6 +1,7 @@
 package Web::Driver::Client::Connection;
 use strict;
 use warnings;
+our $VERSION = '1.0';
 use JSON::PS;
 use Web::Transport::ConnectionClient;
 use Web::Driver::Client::Response;
@@ -18,7 +19,7 @@ sub http_client ($) {
 sub http_get ($$) {
   my ($self, $path) = @_;
   return $self->http_client->request (
-    path => $path, # XXX
+    path => $path,
     method => 'GET',
   )->then (sub {
     return Web::Driver::Client::Response->new_from_response ($_[0]);
@@ -28,7 +29,7 @@ sub http_get ($$) {
 sub http_delete ($$) {
   my ($self, $path) = @_;
   return $self->http_client->request (
-    path => $path, # XXX
+    path => $path,
     method => 'DELETE',
   )->then (sub {
     return Web::Driver::Client::Response->new_from_response ($_[0]);
@@ -38,7 +39,7 @@ sub http_delete ($$) {
 sub http_post ($$$) {
   my ($self, $path, $params) = @_;
   return $self->http_client->request (
-    path => $path, # XXX
+    path => $path,
     method => 'POST',
     headers => {'Content-Type' => 'application/json'},
     body => (perl2json_bytes $params),
@@ -67,3 +68,12 @@ sub close ($) {
 #XXX DESTROY
 
 1;
+
+=head1 LICENSE
+
+Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

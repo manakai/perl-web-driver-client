@@ -1,5 +1,3 @@
-# -*- Makefile -*-
-
 all:
 
 WGET = wget
@@ -41,6 +39,7 @@ test: test-deps test-main
 
 test-deps: deps
 
+# XXX requires TEST_WD_URL
 test-main:
 	$(PROVE) t/*.t
 
