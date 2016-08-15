@@ -1,0 +1,9 @@
+
+- "../../modules/web-encodings" build tests
+- "../../modules/web-url" build tests
+- "../../modules/web-encodings.2" build tests
+- "../../modules/charclass" build tests
+- "../../modules/promise" build tests
+- "../../t_deps/modules/promised-command" build tests
+- "../../modules/promise.2" build tests
+- "../../modules/promised-command" build tests
