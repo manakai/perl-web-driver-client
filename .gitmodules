@@ -1,7 +1,7 @@
 [submodule "modules/web-resource"]
 	path = modules/web-resource
 	url = https://github.com/manakai/perl-web-resource
-	track = transport
+	track = master
 [submodule "modules/web-encodings"]
 	path = modules/web-encodings
 	url = https://github.com/manakai/perl-web-encodings
