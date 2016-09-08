@@ -30,10 +30,6 @@
 	path = modules/json-ps
 	url = https://github.com/wakaba/perl-json-ps
 	track = master
-[submodule "modules/charclass"]
-	path = modules/charclass
-	url = https://github.com/wakaba/perl-charclass
-	track = master
 [submodule "modules/web-datetime"]
 	path = modules/web-datetime
 	url = https://github.com/manakai/perl-web-datetime
