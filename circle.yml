@@ -23,13 +23,13 @@ test:
   override:
     - docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx:
         parallel: true
-    - TEST_WD_URL=http://localhost:9516/wd/hub make test :
+    - TEST_WD_URL=http://localhost:9516 make test :
         timeout: 600
         parallel: true
     - docker kill firefoxdriver:
         parallel: true
 
-    - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:stable /cd:
+    - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:chromium /cd:
         parallel: true
     - TEST_WD_URL=http://localhost:9515 make test :
         timeout: 600
