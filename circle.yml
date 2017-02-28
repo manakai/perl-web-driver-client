@@ -21,15 +21,13 @@ dependencies:
 
 test:
   override:
-
-#XXX
-#    - docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx:
-#        parallel: true
-#    - TEST_WD_URL=http://localhost:9516/wd/hub make test :
-#        timeout: 600
-#        parallel: true
-#    - docker kill firefoxdriver:
-#        parallel: true
+    - docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx:
+        parallel: true
+    - TEST_WD_URL=http://localhost:9516/wd/hub make test :
+        timeout: 600
+        parallel: true
+    - docker kill firefoxdriver:
+        parallel: true
 
     - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:stable /cd:
         parallel: true
