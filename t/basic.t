@@ -85,8 +85,7 @@ test {
     done $c;
     undef $c;
   });
-} n => 1, name => '/ with proxy', timeout => 60*10
-    if 0; # XXX
+} n => 1, name => '/ with proxy', timeout => 60*10;
 
 run_tests;
 
