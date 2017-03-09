@@ -47,6 +47,49 @@ test {
   });
 } n => 1, name => '/', timeout => 60*10;
 
+test {
+  my $c = shift;
+
+  my $wd = Web::Driver::Client::Connection->new_from_url ($WD_URL);
+
+  $wd->new_session (desired => {
+    proxy => {proxyType => 'manual',
+              httpProxy => 'c.hatena.ne.jp',
+              httpProxyPort => 80},
+  })->then (sub {
+    my $session = $_[0];
+    return $session->go (Web::URL->parse_string (q<http://c.hatena.ne.jp>))->then (sub {
+      return $session->execute (q{
+        return document.documentElement.innerHTML;
+      });
+    })->then (sub {
+      my $res = $_[0];
+      my $value = $res->json->{value};
+      test {
+        use utf8;
+        like $value, qr{はてなココ サービス終了のお知らせ};
+      } $c;
+    })->catch (sub {
+      my $error = $_[0];
+      test {
+        is $error, undef, 'No exception';
+      } $c;
+    })->then (sub {
+      return $session->close;
+    });
+  })->catch (sub {
+    my $error = $_[0];
+    test {
+      is $error, undef, 'No exception';
+    } $c;
+  })->then (sub {
+    return $wd->close;
+  })->then (sub {
+    done $c;
+    undef $c;
+  });
+} n => 1, name => '/ with proxy', timeout => 60*10;
+
 run_tests;
 
 =head1 LICENSE
