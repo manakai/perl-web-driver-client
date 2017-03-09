@@ -54,11 +54,11 @@ test {
 
   $wd->new_session (desired => {
     proxy => {proxyType => 'manual',
-              httpProxy => 'http://manakai.github.io',
+              httpProxy => 'c.hatena.ne.jp',
               httpProxyPort => 80},
   })->then (sub {
     my $session = $_[0];
-    return $session->go (Web::URL->parse_string (q<http://manakai.github.io>))->then (sub {
+    return $session->go (Web::URL->parse_string (q<http://c.hatena.ne.jp>))->then (sub {
       return $session->execute (q{
         return document.documentElement.innerHTML;
       });
