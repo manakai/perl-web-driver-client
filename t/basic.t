@@ -14,7 +14,7 @@ test {
 
   my $wd = Web::Driver::Client::Connection->new_from_url ($WD_URL);
 
-  $wd->new_session (desired => {browserName => 'firefox'})->then (sub {
+  $wd->new_session (desired => {})->then (sub {
     my $session = $_[0];
     return $session->go (Web::URL->parse_string (q<https://manakai.github.io>))->then (sub {
       return $session->execute (q{
