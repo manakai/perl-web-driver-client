@@ -41,6 +41,6 @@ test-deps: deps
 
 # XXX requires TEST_WD_URL
 test-main:
-	$(PROVE) t/*.t
+	TEST_MAX_CONCUR=1 $(PROVE) t/*.t
 
 ## License: Public Domain.
