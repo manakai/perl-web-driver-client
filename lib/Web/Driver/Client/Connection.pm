@@ -56,8 +56,14 @@ sub new_session ($;%) {
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;
+    my $json = $res->json;
+    my $session_id = $json->{sessionId};
+    if (defined $json->{value} and ref $json->{value} eq 'HASH' and
+        defined $json->{value}->{sessionId}) {
+      $session_id = $json->{value}->{sessionId};
+    }
     return Web::Driver::Client::Session->new_from_connection_and_session_id
-        ($self, $res->json->{value}->{sessionId} || $res->json->{sessionId});
+        ($self, $session_id);
   });
 } # new_session
 
