@@ -57,7 +57,7 @@ sub new_session ($;%) {
     my $res = $_[0];
     die $res if $res->is_error;
     return Web::Driver::Client::Session->new_from_connection_and_session_id
-        ($self, $res->json->{sessionId});
+        ($self, $res->json->{value}->{sessionId} || $res->json->{sessionId});
   });
 } # new_session
 
@@ -71,7 +71,7 @@ sub close ($) {
 
 =head1 LICENSE
 
-Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
