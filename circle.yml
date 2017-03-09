@@ -23,6 +23,8 @@ test:
     - TEST_WD_URL=http://localhost:9516 make test :
         timeout: 600
         parallel: true
+    - docker logs firefoxdriver:
+        parallel: true
     - docker kill firefoxdriver:
         parallel: true
 
@@ -30,6 +32,8 @@ test:
         parallel: true
     - TEST_WD_URL=http://localhost:9515 make test :
         timeout: 600
+        parallel: true
+    - docker logs chromedriver:
         parallel: true
     - docker kill chromedriver:
         parallel: true
