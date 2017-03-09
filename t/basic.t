@@ -53,7 +53,9 @@ test {
   my $wd = Web::Driver::Client::Connection->new_from_url ($WD_URL);
 
   $wd->new_session (desired => {
-    proxy => {proxyType => 'manual', httpProxy => 'http://manakai.github.io'},
+    proxy => {proxyType => 'manual',
+              httpProxy => 'http://manakai.github.io',
+              httpProxyPort => 80},
   })->then (sub {
     my $session = $_[0];
     return $session->go (Web::URL->parse_string (q<http://manakai.github.io>))->then (sub {
