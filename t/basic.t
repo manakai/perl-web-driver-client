@@ -66,7 +66,8 @@ test {
       my $res = $_[0];
       my $value = $res->json->{value};
       test {
-        like $value, qr{The manakai project};
+        use utf8;
+        like $value, qr{はてなココ サービス終了のお知らせ};
       } $c;
     })->catch (sub {
       my $error = $_[0];
