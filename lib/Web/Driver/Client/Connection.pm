@@ -52,7 +52,7 @@ sub new_session ($;%) {
   my ($self, %args) = @_;
   return $self->http_post (['session'], {
     desiredCapabilities => $args{desired} || {},
-    requiredCapabilities => $args{required},
+    ($args{required} ? (requiredCapabilities => $args{required}) : ()),
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;

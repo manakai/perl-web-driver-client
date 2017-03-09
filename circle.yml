@@ -6,7 +6,7 @@ dependencies:
     - "local/perlbrew/perls"
   override:
     - docker info
-    - docker pull quay.io/wakaba/chromedriver:stable :
+    - docker pull quay.io/wakaba/chromedriver:chromium :
         background: true
         timeout: 600
     - docker pull quay.io/wakaba/firefoxdriver:stable :
@@ -15,9 +15,6 @@ dependencies:
 
     - make deps:
         timeout: 600
-
-    - ip route | awk '/docker0/ { print $NF }' > docker0-ip.txt:
-        parallel: true
 
 test:
   override:
