@@ -1,12 +1,12 @@
-AnyEvent::Handle
+AnyEvent::Socket
 Carp~1.38
 Digest::SHA~5.96
 Encode~2.88
 MIME::Base64~3.15
-Net::SSLeay~1.80
+Net::SSLeay~1.81
 Path::Tiny~0.104
 Scalar::Util~1.47
 Socket~2.024
 Term::ANSIColor~4.06
-Test::Builder~1.302078
+Test::More~1.302078
 Time::HiRes~1.9741
