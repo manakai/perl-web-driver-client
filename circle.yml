@@ -6,10 +6,7 @@ dependencies:
     - "local/perlbrew/perls"
   override:
     - docker info
-    - docker pull quay.io/wakaba/chromedriver:stable :
-        background: true
-        timeout: 600
-    - docker pull quay.io/wakaba/firefoxdriver:stable :
+    - docker pull quay.io/wakaba/chromedriver:chromium && docker pull quay.io/wakaba/firefoxdriver:stable :
         background: true
         timeout: 600
 
@@ -28,7 +25,7 @@ test:
     - docker kill firefoxdriver:
         parallel: true
 
-    - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:stable /cd:
+    - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:chromium /cd:
         parallel: true
     - TEST_WD_URL=http://localhost:9515 make test :
         timeout: 600
