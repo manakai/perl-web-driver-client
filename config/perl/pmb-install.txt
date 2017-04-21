@@ -1,7 +1,7 @@
 AnyEvent::Handle
 Carp~1.38
 Digest::SHA~5.96
-Encode~2.88
+Encode~2.89
 MIME::Base64~3.15
 Net::SSLeay~1.81
 Path::Tiny~0.104
