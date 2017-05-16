@@ -1,101 +1,82 @@
 use strict;
 use warnings;
 use Path::Tiny;
-use lib glob path (__FILE__)->parent->parent->child ('t_deps/modules/*/lib');
-use Test::X1;
-use Test::More;
-use Web::URL;
-use Web::Driver::Client::Connection;
-
-my $WD_URL = Web::URL->parse_string ($ENV{TEST_WD_URL})
-    or die "Environment variable |TEST_WD_URL| is not specified";
+use lib glob path (__FILE__)->parent->parent->child ('t_deps/lib');
+use WDCTest;
 
 test {
   my $c = shift;
-
-  my $wd = Web::Driver::Client::Connection->new_from_url ($WD_URL);
-
-  $wd->new_session (desired => {})->then (sub {
-    my $session = $_[0];
-    return $session->go (Web::URL->parse_string (q<https://manakai.github.io>))->then (sub {
-      return $session->execute (q{
-        return document.documentElement.innerHTML;
-      });
-    })->then (sub {
-      my $res = $_[0];
-      my $value = $res->json->{value};
-      test {
-        like $value, qr{The manakai project};
-      } $c;
-    })->catch (sub {
-      my $error = $_[0];
-      test {
-        is $error, undef, 'No exception';
-      } $c;
-    })->then (sub {
-      return $session->close;
-    });
-  })->catch (sub {
-    my $error = $_[0];
-    test {
-      is $error, undef, 'No exception';
-    } $c;
-  })->then (sub {
-    return $wd->close;
-  })->then (sub {
+  my $body = "\x{5323}" . rand;
+  return promised_cleanup {
     done $c;
     undef $c;
+  } server ({
+    '/index.html' => (encode_web_utf8 '<html><title>Test</title><body>' . $body),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session (desired => {})->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
+        return $session->execute (q{
+          return document.body.textContent;
+        });
+      })->then (sub {
+        my $res = $_[0];
+        my $value = $res->json->{value};
+        test {
+          is $value, $body;
+        } $c;
+      });
+    });
   });
-} n => 1, name => '/', timeout => 60*10;
+} n => 1, name => 'direct access';
 
 test {
   my $c = shift;
-
-  my $wd = Web::Driver::Client::Connection->new_from_url ($WD_URL);
-
-  $wd->new_session (desired => {
-    proxy => {proxyType => 'manual',
-              httpProxy => 'c.hatena.ne.jp',
-              httpProxyPort => 80},
-  })->then (sub {
-    my $session = $_[0];
-    return $session->go (Web::URL->parse_string (q<http://c.hatena.ne.jp>))->then (sub {
-      return $session->execute (q{
-        return document.documentElement.innerHTML;
-      });
-    })->then (sub {
-      my $res = $_[0];
-      my $value = $res->json->{value};
-      test {
-        use utf8;
-        like $value, qr{はてなココ サービス終了のお知らせ};
-      } $c;
-    })->catch (sub {
-      my $error = $_[0];
-      test {
-        is $error, undef, 'No exception';
-      } $c;
-    })->then (sub {
-      return $session->close;
-    });
-  })->catch (sub {
-    my $error = $_[0];
-    test {
-      is $error, undef, 'No exception';
-    } $c;
-  })->then (sub {
-    return $wd->close;
-  })->then (sub {
+  my $host = rand . '.test';
+  return promised_cleanup {
     done $c;
     undef $c;
+  } server ({
+    '/host.html' => '<html><title>Test</title><body>@@ENV:HTTP_HOST@@',
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session (desired => {
+      proxy => {proxyType => 'manual',
+                httpProxy => $url->hostport,
+                httpProxyPort => $url->port},
+    })->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ("http://$host/host.html"))->then (sub {
+        return $session->execute (q{
+          return document.body.textContent;
+        });
+      })->then (sub {
+        my $res = $_[0];
+        my $value = $res->json->{value};
+        test {
+          is $value, $host;
+        } $c;
+      });
+    });
   });
-} n => 1, name => '/ with proxy', timeout => 60*10;
+} n => 1, name => 'proxy access';
 
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
