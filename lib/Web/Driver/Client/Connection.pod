@@ -2,6 +2,20 @@
 
 XXX
 
+=over 4
+
+=item $wd->new_session (...)->then (sub { $session = shift })
+
+Create a new WebDriver session.
+
+XXX arguments
+
+The method returns a promise (L<Promise>) which is to be resolved with
+a L<Web::Driver::Client::Session> object (or to be rejected with an
+error).
+
+=back
+
 =head1 DEPENDENCY
 
 The module requires Perl 5.8 or later.
@@ -33,7 +47,7 @@ Wakaba <wakaba@suikawiki.org>
 
 =head1 LICENSE
 
-Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
