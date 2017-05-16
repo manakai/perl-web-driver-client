@@ -49,11 +49,7 @@ test {
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
     return promised_cleanup {
       return $wd->close;
-    } $wd->new_session (desired => {
-      proxy => {proxyType => 'manual',
-                httpProxy => $url->hostport,
-                httpProxyPort => $url->port},
-    })->then (sub {
+    } $wd->new_session (http_proxy_url => $url)->then (sub {
       my $session = $_[0];
       return promised_cleanup {
         return $session->close;

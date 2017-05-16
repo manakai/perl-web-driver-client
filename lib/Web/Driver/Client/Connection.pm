@@ -52,13 +52,29 @@ sub http_post ($$$) {
 sub new_session ($;%) {
   my ($self, %args) = @_;
   my $session_args = {
-    desiredCapabilities => $args{desired} || {},
-    ($args{required} ? (requiredCapabilities => $args{required}) : ()),
+    desiredCapabilities => $args{desired} || {}, # XXX not documented yet
+    ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
   };
-  ## ChromeDriver sometimes hungs up without returning any response or
-  ## closing connection.
   my $res;
-  return Promise->resolve->then (sub {
+  return $self->http_get (['status'], {})->then (sub {
+    my $res = $_[0];
+    my $json = $res->json;
+    my $maybe_chromedriver = (defined $json->{status} and
+                              not defined $json->{value}->{ready});
+
+    if ($args{http_proxy_url}) {
+      $session_args->{desiredCapabilities}->{proxy} = $maybe_chromedriver ? {
+        proxyType => 'manual',
+        httpProxy => $args{http_proxy_url}->hostport,
+      } : {
+        proxyType => 'manual',
+        httpProxy => $args{http_proxy_url}->host->to_ascii,
+        httpProxyPort => $args{http_proxy_url}->port,
+      };
+    }
+  })->then (sub {
+    ## ChromeDriver sometimes hungs up without returning any response
+    ## or closing connection.
     return promised_wait_until {
       return Promise->resolve->then (sub {
         return promised_timeout {

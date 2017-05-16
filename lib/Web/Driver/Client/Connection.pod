@@ -4,11 +4,22 @@ XXX
 
 =over 4
 
-=item $wd->new_session (...)->then (sub { $session = shift })
+=item $wd->new_session ($name => $value, ...)->then (sub { $session = shift })
 
 Create a new WebDriver session.
 
-XXX arguments
+Following options can be specified as name/value pairs of the method
+arguments:
+
+=over 4
+
+=item http_proxy_url => $url
+
+The URL of the HTTP proxy used by the session's browser.  The value
+must be a L<Web::URL> object whose C<scheme> is C<http> and C<host>
+and C<port> identify the proxy server.
+
+=back
 
 The method returns a promise (L<Promise>) which is to be resolved with
 a L<Web::Driver::Client::Session> object (or to be rejected with an
