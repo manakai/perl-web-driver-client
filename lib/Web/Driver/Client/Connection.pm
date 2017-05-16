@@ -3,6 +3,7 @@ use strict;
 use warnings;
 our $VERSION = '1.0';
 use JSON::PS;
+use Promised::Flow;
 use Web::Transport::ConnectionClient;
 use Web::Driver::Client::Response;
 use Web::Driver::Client::Session;
@@ -56,19 +57,26 @@ sub new_session ($;%) {
   };
   ## ChromeDriver sometimes hungs up without returning any response or
   ## closing connection.
+  my $res;
   return Promise->resolve->then (sub {
     return promised_wait_until {
       return Promise->resolve->then (sub {
         return promised_timeout {
           return $self->http_post (['session'], $session_args);
-        } 20;
+        } 10;
+      })->then (sub {
+        $res = $_[0];
+        die $res if $_[0]->is_network_error;
+        return 1;
       })->catch (sub {
-        $self->http_client->close (message => '|new_session| timeout (20)');
-        return 0;
+        return $self->http_client->abort (message => '|new_session| timeout (20)')->then (sub {
+          $self->{http_client} = Web::Transport::ConnectionClient->new_from_url
+              ($self->{url});
+          return 0;
+        });
       });
     } timeout => 60*3;
   })->then (sub {
-    my $res = $_[0];
     die $res if $res->is_error;
     my $json = $res->json;
     my $session_id = $json->{sessionId};

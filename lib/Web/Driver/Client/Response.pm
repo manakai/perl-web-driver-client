@@ -47,7 +47,7 @@ sub stringify ($) {
         return "Error $json->{status}";
       }
     }
-    return "Error " . $self->{response}->status_line;
+    return 'Error: ' . $self->{response};
   }
   return 'OK';
 } # stringify
