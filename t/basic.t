@@ -7,7 +7,8 @@ use Test::More;
 use Web::URL;
 use Web::Driver::Client::Connection;
 
-my $WD_URL = Web::URL->parse_string ($ENV{TEST_WD_URL});
+my $WD_URL = Web::URL->parse_string ($ENV{TEST_WD_URL})
+    or die "Environment variable |TEST_WD_URL| is not specified";
 
 test {
   my $c = shift;

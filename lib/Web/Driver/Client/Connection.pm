@@ -50,9 +50,23 @@ sub http_post ($$$) {
 
 sub new_session ($;%) {
   my ($self, %args) = @_;
-  return $self->http_post (['session'], {
+  my $session_args = {
     desiredCapabilities => $args{desired} || {},
     ($args{required} ? (requiredCapabilities => $args{required}) : ()),
+  };
+  ## ChromeDriver sometimes hungs up without returning any response or
+  ## closing connection.
+  return Promise->resolve->then (sub {
+    return promised_wait_until {
+      return Promise->resolve->then (sub {
+        return promised_timeout {
+          return $self->http_post (['session'], $session_args);
+        } 20;
+      })->catch (sub {
+        $self->http_client->close (message => '|new_session| timeout (20)');
+        return 0;
+      });
+    } timeout => 60*3;
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;
@@ -66,12 +80,16 @@ sub new_session ($;%) {
         ($self, $session_id);
   });
 } # new_session
+# XXX GeckoDriver does not support creating of multiple concurrent sessions
 
+# XXX should also close any existing sessions?
 sub close ($) {
   return $_[0]->{http_client}->close;
 } # close
 
-#XXX DESTROY
+sub DESTROY ($) {
+  return $_[0]->close;
+} # DESTROY
 
 1;
 
