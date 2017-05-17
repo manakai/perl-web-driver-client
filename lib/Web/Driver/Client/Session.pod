@@ -1,0 +1,61 @@
+XXX
+
+=over 4
+
+=item $session->http_get ($path_segments)->then (sub { $res = shift })
+
+Send a command using the session with the HTTP C<GET> method.
+
+The first argument must be an array reference of path segments.
+Segments C<session> and the session ID is prepended before these
+segments to construct the request URL.
+
+It returns a promise (L<Promise>) that is to be resolved with a
+L<Web::Driver::Client::Response> object containing the response to the
+request (or to be rejected with an error).
+
+=item $session->http_post ($path_segments, $params)->then (sub { $res = shift })
+
+Send a command using the session with the HTTP C<POST> method.
+
+The first argument must be an array reference of path segments.
+Segments C<session> and the session ID is prepended before these
+segments to construct the request URL.
+
+The second argument must be a hash reference that can be used to
+create the payload body's JSON data.
+
+It returns a promise (L<Promise>) that is to be resolved with a
+L<Web::Driver::Client::Response> object containing the response to the
+request (or to be rejected with an error).
+
+=item $session->http_delete ($path_segments)->then (sub { $res = shift })
+
+Send a command using the session with the HTTP C<DELETE> method.
+
+The first argument must be an array reference of path segments.
+Segments C<session> and the session ID is prepended before these
+segments to construct the request URL.
+
+It returns a promise (L<Promise>) that is to be resolved with a
+L<Web::Driver::Client::Response> object containing the response to the
+request (or to be rejected with an error).
+
+=back
+
+
+XXX
+
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>
+
+=head1 LICENSE
+
+Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
