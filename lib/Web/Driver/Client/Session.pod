@@ -20,6 +20,16 @@ It returns a promise (L<Promise>) that is to be resolved with a URL
 object (L<Web::URL>) when the URL is obtained (or to be rejected with
 an error).
 
+=item $promise = $session->switch_to_frame_by_selector ($selector)
+
+Select a browsing context (the Switch To Frame command).
+
+The first argument must be a character string of the group of
+selectors used to select an C<iframe> element.
+
+It returns a promise (L<Promise>) that is to be resolved when a
+browsing context is selected (or to be rejected with an error).
+
 =item $session->http_get ($path_segments)->then (sub { $res = shift })
 
 Send a command using the session with the HTTP C<GET> method.

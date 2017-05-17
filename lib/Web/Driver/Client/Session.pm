@@ -63,6 +63,23 @@ sub execute ($$$;%) {
   });
 } # execute
 
+sub switch_to_frame_by_selector ($$) {
+  my ($self, $selector) = @_;
+  return $self->execute (q{
+    return document.querySelector (arguments[0]);
+  },  [$selector])->then (sub {
+    my $json = $_[0]->json;
+    die $_[0] if $_[0]->is_error;
+    die "Selector |$selector| selects no element"
+        if not defined $json->{value};
+    return $self->http_post (['frame'], {id => $json->{value}});
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # switch_to_frame_by_selector
+
 sub close ($) {
   my $self = $_[0];
   $self->{closed} = 1;
