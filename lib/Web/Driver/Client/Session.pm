@@ -2,6 +2,7 @@ package Web::Driver::Client::Session;
 use strict;
 use warnings;
 our $VERSION = '1.0';
+use Web::URL;
 
 sub new_from_connection_and_session_id ($$$) {
   return bless {connection => $_[1], session_id => $_[2]}, $_[0];
@@ -33,8 +34,22 @@ sub go ($$) {
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;
+    return undef;
   });
 } # go
+
+sub url ($) {
+  my $self = $_[0];
+  return $self->http_get (['url'])->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    my $parsed = Web::URL->parse_string ($res->json->{value});
+    die "WebDriver server returns an unparsable URL <@{[$res->json->{value}]}>"
+        unless defined $parsed;
+    return $parsed;
+
+  });
+} # url
 
 sub execute ($$$;%) {
   my ($self, $script, $args, %args) = @_;
@@ -50,8 +65,14 @@ sub execute ($$$;%) {
 
 sub close ($) {
   my $self = $_[0];
+  $self->{closed} = 1;
   return $self->http_delete ([]);
 } # close
+
+sub DESTROY ($) {
+  my $self = $_[0];
+  $self->close unless $self->{closed};
+}
 
 1;
 

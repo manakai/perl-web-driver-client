@@ -2,6 +2,24 @@ XXX
 
 =over 4
 
+=item $promise = $session->go ($url)
+
+Navigate to the browsing context to a URL (the Go command).
+
+The first argument must be a URL object (L<Web::URL>).
+
+It returns a promise (L<Promise>) that is to be resolved when the
+WebDriver command returns (or to be rejected with an error).
+
+=item $session->url->then (sub { $url = shift })
+
+Get the current document URL of the browsing context (the Get Current
+URL command).
+
+It returns a promise (L<Promise>) that is to be resolved with a URL
+object (L<Web::URL>) when the URL is obtained (or to be rejected with
+an error).
+
 =item $session->http_get ($path_segments)->then (sub { $res = shift })
 
 Send a command using the session with the HTTP C<GET> method.
@@ -41,11 +59,26 @@ It returns a promise (L<Promise>) that is to be resolved with a
 L<Web::Driver::Client::Response> object containing the response to the
 request (or to be rejected with an error).
 
+=item $promise = $session->close
+
+Delete the session from the WebDriver server (the Delete Session
+command).
+
+It returns a promise (L<Promise>) that is to be resolved when the
+server returns (or to be rejected with an error).
+
+This method must be explicitly invoked when the session is no longer
+used.
+
 =back
 
+=head1 SEE ALSO
 
-XXX
+L<Web::Driver::Connection>.
 
+=head1 SPECIFICATION
+
+WebDriver <https://w3c.github.io/webdriver/webdriver-spec.html>.
 
 =head1 AUTHOR
 
