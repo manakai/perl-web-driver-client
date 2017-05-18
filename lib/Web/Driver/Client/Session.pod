@@ -86,13 +86,16 @@ Whether the cookie has the C<Secure> attribute or not.
 =item httponly => $boolean
 
 Whether the cookie has the C<HttpOnly> attribute or not.  Note that
-ChromeDriver does not support this option at the time of writing.
+some WebDriver server implementations do not support this option.
 
 =item max_age => $delta_seconds
 
 The number of seconds specified in the C<Max-Age> attribute value.
 
 =back
+
+Note that C<$name>, C<$value>, and C<domain> and C<path> values must
+be valid values.  Unsafe user input should not be specified.
 
 It returns a promise (L<Promise>) that is to be resolved after the
 cookie has been set (or to be rejected with an error).

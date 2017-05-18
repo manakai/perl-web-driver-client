@@ -111,7 +111,34 @@ sub set_cookie ($$$;%) {
     cookie => $cookie,
   })->then (sub {
     my $res = $_[0];
-    die $res if $res->is_error;
+    if ($res->is_error) {
+      my $json = $res->json;
+      if (defined $json->{message} and
+          $json->{message} =~ /^You may only set cookies on HTML documents/) {
+        ## GeckoDriver :-<
+
+        ## Note that $name, $value, $args{$key} are not validated!
+        my $cookie = $name . '=' . $value;
+        for my $key (qw(path domain)) {
+          if (defined $args{$key}) {
+            $cookie .= '; ' . $key . '=' . $args{$key};
+          }
+        }
+        if ($args{secure}) {
+          $cookie .= '; Secure';
+        }
+        if ($args{httponly} or $args{httpOnly}) {
+          $cookie .= '; HttpOnly';
+        }
+        if ($args{max_age}) {
+          $cookie .= '; Max-Age=' . 0+$args{max_age};
+        }
+        return $self->execute (q{ document.cookie = arguments[0] }, [$cookie])->then (sub {
+          return undef;
+        });
+      }
+      die $res;
+    }
     return undef;
   });
 } # set_cookie
