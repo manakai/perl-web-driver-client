@@ -290,7 +290,6 @@ test {
     '/foo/bar.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
   }, sub {
     my $url = shift;
-    my $go_url = Web::URL->parse_string ('/foo/bar.html', $url);
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
     return promised_cleanup {
       return $wd->close;
@@ -298,11 +297,11 @@ test {
       my $session = $_[0];
       return promised_cleanup {
         return $session->close;
-      } $session->go ($go_url)->then (sub {
+      } $session->go (Web::URL->parse_string ('/foo/bar.html', $url))->then (sub {
         my $res = $_[0];
-        return $session->set_cookie ($name => $value, max_age => 3);
+        return $session->set_cookie ($name => rand);
       })->then (sub {
-        return promised_sleep 6;
+        return $session->set_cookie ($name => $value, max_age => -3);
       })->then (sub {
         return $session->get_cookie ($name);
       })->then (sub {
