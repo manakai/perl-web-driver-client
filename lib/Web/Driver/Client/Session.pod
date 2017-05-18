@@ -20,6 +20,83 @@ It returns a promise (L<Promise>) that is to be resolved with a URL
 object (L<Web::URL>) when the URL is obtained (or to be rejected with
 an error).
 
+=item $session->get_cookie ($name)->then (sub { $cookies = shift })
+
+Get cookies by name.
+
+The first argument must be a character string of the cookie name.
+
+It returns a promise (L<Promise>) that is to be resolved with an array
+reference of zero or more hash references representing cookies (or to
+be rejected with an error).  A cookie has following name/value pairs:
+
+=over 4
+
+=item name => $string
+
+The cookie name.
+
+=item value => $string
+
+The cookie value.
+
+=item domain => $string
+
+The cookie's domain.
+
+=item path => $string
+
+The cookie's path.
+
+=item secure => $boolean
+
+Whether the cookie has the C<Secure> attribute or not.
+
+=item httponly => $boolean
+
+Whether the cookie has the C<HttpOnly> attribute or not.
+
+=back
+
+=item $promise = $session->set_cookie ($name, $value, $optname => $optvalue, ...)
+
+Set a cookie.
+
+The first argument must be a character string of the cookie name.
+
+The second argument must be a character string of the cookie value.
+
+The remaining arguments are zero or more name/value pairs specifying
+following options:
+
+=over 4
+
+=item domain => $string
+
+A character string of the C<Domain> attribute value.
+
+=item path => $string
+
+A character string of the C<Path> attribute value.
+
+=item secure => $boolean
+
+Whether the cookie has the C<Secure> attribute or not.
+
+=item httponly => $boolean
+
+Whether the cookie has the C<HttpOnly> attribute or not.  Note that
+ChromeDriver does not support this option at the time of writing.
+
+=item max_age => $delta_seconds
+
+The number of seconds specified in the C<Max-Age> attribute value.
+
+=back
+
+It returns a promise (L<Promise>) that is to be resolved after the
+cookie has been set (or to be rejected with an error).
+
 =item $promise = $session->switch_to_frame_by_selector ($selector)
 
 Select a browsing context (the Switch To Frame command).

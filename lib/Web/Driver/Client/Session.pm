@@ -65,6 +65,57 @@ sub execute ($$$;%) {
   });
 } # execute
 
+sub get_cookie ($$) {
+  my ($self, $name) = @_;
+  return $self->http_get (['cookie', $name])->then (sub {
+    my $res = $_[0];
+    if ($res->is_no_command_error) {
+      return $self->http_get (['cookie'])->then (sub {
+        my $res = $_[0];
+        die $res if $res->is_error;
+        return [map {
+          $_->{httponly} = delete $_->{httpOnly};
+          $_;
+        } grep { $_->{name} eq $name } @{$res->json->{value}}];
+      });
+    }
+    die $res if $res->is_error;
+    return [map {
+      $_->{httponly} = delete $_->{httpOnly};
+      $_;
+    } @{$res->json->{value}}];
+  });
+} # get_cookie
+
+sub set_cookie ($$$;%) {
+  my ($self, $name, $value, %args) = @_;
+  my $cookie = {
+    name => ''.$name,
+    value => ''.$value,
+  };
+  for my $key (qw(path domain)) {
+    if (defined $args{$key}) {
+      $cookie->{$key} = '' . $args{$key};
+    }
+  }
+  if ($args{secure}) {
+    $cookie->{secure} = \1;
+  }
+  if ($args{httponly} or $args{httpOnly}) {
+    $cookie->{httpOnly} = \1;
+  }
+  if ($args{max_age}) {
+    $cookie->{expiry} = time + $args{max_age};
+  }
+  return $self->http_post (['cookie'], {
+    cookie => $cookie,
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # set_cookie
+
 sub _select ($$) {
   my ($self, $selector) = @_;
   return $self->execute (q{
