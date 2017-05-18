@@ -97,15 +97,36 @@ The number of seconds specified in the C<Max-Age> attribute value.
 It returns a promise (L<Promise>) that is to be resolved after the
 cookie has been set (or to be rejected with an error).
 
-=item $promise = $session->switch_to_frame_by_selector ($selector)
+=item $session->inner_html (selector => $selector)->then (sub { $html = shift })
 
-Select a browsing context (the Switch To Frame command).
+Get the serialization (i.e. C<innerHTML>).
 
-The first argument must be a character string of the group of
-selectors used to select an C<iframe> element.
+Zero or more options can be specified as name/value pair arguments.
 
-It returns a promise (L<Promise>) that is to be resolved when a
-browsing context is selected (or to be rejected with an error).
+If the C<selector> option is specified, the content of the element
+selected by the value is serialized.  The value must be a character
+string of the group of selectors.  Otherwise, the document element
+(including it self) is serialized.
+
+it returns a promise (L<Promise>) that is to be resolved with the
+character string of the serialization, if C<selector> selects an
+element or no C<selector> option is specified, or with C<undef> if
+C<selector> selects no element (or to be rejected with an error).
+
+=item $session->text_content (selector => $selector)->then (sub { $text = shift })
+
+Get the text content (i.e. C<textContent>).
+
+Zero or more options can be specified as name/value pair arguments.
+
+If the C<selector> option is specified, the element selected by the
+value is used.  The value must be a character string of the group of
+selectors.  Otherwise, the document element is used.
+
+it returns a promise (L<Promise>) that is to be resolved with the
+character string of the text content, if C<selector> selects an
+element or no C<selector> option is specified, or with C<undef> if
+C<selector> selects no element (or to be rejected with an error).
 
 =item $session->screenshot ($name => $value, ...)->then (sub { $bytes = shift })
 
@@ -122,6 +143,16 @@ Screenshot command, this option is ignored.
 
 It returns a promise (L<Promise>) that is to be resolved with the byte
 string of the screenshot image data (or to be rejected with an error).
+
+=item $promise = $session->switch_to_frame_by_selector ($selector)
+
+Select a browsing context (the Switch To Frame command).
+
+The first argument must be a character string of the group of
+selectors used to select an C<iframe> element.
+
+It returns a promise (L<Promise>) that is to be resolved when a
+browsing context is selected (or to be rejected with an error).
 
 =item $session->http_get ($path_segments)->then (sub { $res = shift })
 

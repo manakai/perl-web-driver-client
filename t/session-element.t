@@ -10,7 +10,7 @@ test {
     done $c;
     undef $c;
   } server ({
-    '/index.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
+    '/index.html' => (encode_web_utf8 '<title>y</title><p>abcde<p>xyabcd'),
   }, sub {
     my $url = shift;
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
@@ -21,16 +21,28 @@ test {
       return promised_cleanup {
         return $session->close;
       } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
-        return $session->screenshot;
+        return $session->text_content (selector => 'p + p');
       })->then (sub {
         my $result = $_[0];
         test {
-          like $result, qr{^\x89PNG};
+          is $result, 'xyabcd';
+        } $c;
+        return $session->text_content (selector => 'p + p + p');
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, undef;
+        } $c;
+        return $session->text_content;
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, 'yabcdexyabcd';
         } $c;
       });
     });
   });
-} n => 1, name => 'window screenshot';
+} n => 3, name => 'document and element text content';
 
 test {
   my $c = shift;
@@ -38,7 +50,7 @@ test {
     done $c;
     undef $c;
   } server ({
-    '/index.html' => (encode_web_utf8 '<p>abcde<p>xyabcd'),
+    '/index.html' => (encode_web_utf8 '<title>y</title><p>abcde<p>xya<i>b</i>cd'),
   }, sub {
     my $url = shift;
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
@@ -49,16 +61,28 @@ test {
       return promised_cleanup {
         return $session->close;
       } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
-        return $session->screenshot (selector => 'p + p');
+        return $session->inner_html (selector => 'p + p');
       })->then (sub {
         my $result = $_[0];
         test {
-          like $result, qr{^\x89PNG};
+          is $result, 'xya<i>b</i>cd';
+        } $c;
+        return $session->inner_html (selector => 'p + p + p');
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, undef;
+        } $c;
+        return $session->inner_html;
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, '<html><head><title>y</title></head><body><p>abcde</p><p>xya<i>b</i>cd</p></body></html>';
         } $c;
       });
     });
   });
-} n => 1, name => 'element screenshot';
+} n => 3, name => 'document and element inner html';
 
 run_tests;
 
