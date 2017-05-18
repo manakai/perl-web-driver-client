@@ -139,6 +139,44 @@ sub switch_to_frame_by_selector ($$) {
   });
 } # switch_to_frame_by_selector
 
+sub text_content ($;%) {
+  my ($self, %args) = @_;
+  return Promise->resolve->then (sub {
+    if (defined $args{selector}) {
+      return $self->_select ($args{selector})->then (sub {
+        return undef unless defined $_[0];
+        return $self->execute (q{ return arguments[0].textContent }, [$_[0]]);
+      });
+    } else {
+      return $self->execute (q{ return document.documentElement ? document.documentElement.textContent : '' });
+    }
+  })->then (sub {
+    my $res = $_[0];
+    return undef unless defined $res;
+    die $res if $res->is_error;
+    return $res->json->{value};
+  });
+} # text_content
+
+sub inner_html ($;%) {
+  my ($self, %args) = @_;
+  return Promise->resolve->then (sub {
+    if (defined $args{selector}) {
+      return $self->_select ($args{selector})->then (sub {
+        return undef unless defined $_[0];
+        return $self->execute (q{ return arguments[0].innerHTML }, [$_[0]]);
+      });
+    } else {
+      return $self->execute (q{ return document.documentElement ? document.documentElement.outerHTML : '' });
+    }
+  })->then (sub {
+    my $res = $_[0];
+    return undef unless defined $res;
+    die $res if $res->is_error;
+    return $res->json->{value};
+  });
+} # inner_html
+
 sub screenshot ($;%) {
   my ($self, %args) = @_;
   return Promise->resolve->then (sub {
