@@ -226,9 +226,7 @@ sub screenshot ($;%) {
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;
-    my $encoded = $res->json->{value};
-    $encoded =~ s/^data:[^,]+,//;
-    return decode_base64 $encoded;
+    return decode_base64 $res->json->{value};
   });
 } # screenshot
 
