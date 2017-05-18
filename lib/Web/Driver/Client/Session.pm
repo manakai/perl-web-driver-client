@@ -113,8 +113,10 @@ sub set_cookie ($$$;%) {
     my $res = $_[0];
     if ($res->is_error) {
       my $json = $res->json;
-      if (defined $json->{message} and
-          $json->{message} =~ /^You may only set cookies on HTML documents/) {
+      if ((defined $json->{value}->{message} and
+           $json->{value}->{message} =~ /^You may only set cookies on HTML documents/) or
+          (defined $json->{message} and
+           $json->{message} =~ /^You may only set cookies on HTML documents/)) {
         ## GeckoDriver :-<
 
         ## Note that $name, $value, $args{$key} are not validated!
