@@ -99,6 +99,8 @@ sub server ($$) {
       my $headers = [];
       if ($env->{PATH_INFO} =~ /\.html\z/) {
         push @$headers, 'content-type','text/html;charset=utf-8';
+      } elsif ($env->{PATH_INFO} =~ /\.txt\z/) {
+        push @$headers, 'content-type','text/plain;charset=utf-8';
       }
       $body =~ s/\@\@ENV:(\w+)\@\@/$env->{$1}/g;
       return [200, $headers, [$body]];
