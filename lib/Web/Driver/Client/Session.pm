@@ -2,6 +2,8 @@ package Web::Driver::Client::Session;
 use strict;
 use warnings;
 our $VERSION = '1.0';
+use Carp;
+use MIME::Base64;
 use Web::URL;
 
 sub new_from_connection_and_session_id ($$$) {
@@ -63,22 +65,56 @@ sub execute ($$$;%) {
   });
 } # execute
 
-sub switch_to_frame_by_selector ($$) {
+sub _select ($$) {
   my ($self, $selector) = @_;
   return $self->execute (q{
     return document.querySelector (arguments[0]);
   },  [$selector])->then (sub {
     my $json = $_[0]->json;
     die $_[0] if $_[0]->is_error;
-    die "Selector |$selector| selects no element"
-        if not defined $json->{value};
-    return $self->http_post (['frame'], {id => $json->{value}});
+    return $json->{value};
+  });
+} # _select
+
+sub switch_to_frame_by_selector ($$) {
+  my ($self, $selector) = @_;
+  return $self->_select ($selector)->then (sub {
+    die "Selector |$selector| selects no element" if not defined $_[0];
+    return $self->http_post (['frame'], {id => $_[0]});
   })->then (sub {
     my $res = $_[0];
     die $res if $res->is_error;
     return undef;
   });
 } # switch_to_frame_by_selector
+
+sub screenshot ($;%) {
+  my ($self, %args) = @_;
+  return Promise->resolve->then (sub {
+    if (defined $args{selector}) {
+      return $self->_select ($args{selector})->then (sub {
+        die "Selector |$args{selector}| selects no element"
+            unless defined $_[0];
+        return $self->http_get (['element', $_[0]->{ELEMENT}, 'screenshot']);
+      })->then (sub {
+        my $res = $_[0];
+        if ($res->is_no_command_error) {
+          carp "Element screenshot is not supported by the WebDriver server";
+          return $self->http_get (['screenshot']);
+        }
+        return $res;
+      });
+    } else {
+      return $self->http_get (['screenshot']);
+    }
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    my $encoded = $res->json->{value};
+    $encoded =~ s/^data:[^,]+,//;
+    return decode_base64 $encoded;
+  });
+} # screenshot
 
 sub close ($) {
   my $self = $_[0];

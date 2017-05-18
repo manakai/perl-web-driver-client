@@ -30,6 +30,22 @@ selectors used to select an C<iframe> element.
 It returns a promise (L<Promise>) that is to be resolved when a
 browsing context is selected (or to be rejected with an error).
 
+=item $session->screenshot ($name => $value, ...)->then (sub { $bytes = shift })
+
+Take a screenshot (the Take Screenshot and Take Element Screenshot
+commands).
+
+Zero or more options can be specified as name/value pair arguments.
+
+If the C<selector> option is specified, an element screenshot of the
+element selected by the value is taken.  The value must be a character
+string of the group of selectors.  Otherwise, a window screenshot is
+taken.  If the WebDriver server does not support Take Element
+Screenshot command, this option is ignored.
+
+It returns a promise (L<Promise>) that is to be resolved with the byte
+string of the screenshot image data (or to be rejected with an error).
+
 =item $session->http_get ($path_segments)->then (sub { $res = shift })
 
 Send a command using the session with the HTTP C<GET> method.

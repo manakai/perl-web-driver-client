@@ -33,6 +33,11 @@ sub is_error ($) {
   return 0;
 } # is_error
 
+sub is_no_command_error ($) {
+  return 0 unless $_[0]->is_error;
+  return $_[0]->{response}->status == 404;
+} # is_no_command_error
+
 sub stringify ($) {
   my $self = $_[0];
   if ($self->is_error) {
