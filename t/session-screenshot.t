@@ -6,67 +6,61 @@ use WDCTest;
 
 test {
   my $c = shift;
-  my $body = "\x{5323}" . rand;
   return promised_cleanup {
     done $c;
     undef $c;
   } server ({
-    '/index.html' => (encode_web_utf8 '<html><title>Test</title><body>' . $body),
+    '/index.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
   }, sub {
     my $url = shift;
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
     return promised_cleanup {
       return $wd->close;
-    } $wd->new_session (desired => {})->then (sub {
+    } $wd->new_session->then (sub {
       my $session = $_[0];
       return promised_cleanup {
         return $session->close;
       } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
-        return $session->execute (q{
-          return document.body.textContent;
-        });
+        return $session->screenshot;
       })->then (sub {
-        my $res = $_[0];
-        my $value = $res->json->{value};
+        my $result = $_[0];
         test {
-          is $value, $body;
+          like $result, qr{^\x89PNG};
         } $c;
       });
     });
   });
-} n => 1, name => 'direct access';
+} n => 1, name => 'window screenshot';
 
 test {
   my $c = shift;
-  my $host = rand . '.test';
   return promised_cleanup {
     done $c;
     undef $c;
   } server ({
-    '/host.html' => '<html><title>Test</title><body>@@ENV:HTTP_HOST@@',
+    '/index.html' => (encode_web_utf8 '<p>abcde<p>xyabcd'),
   }, sub {
     my $url = shift;
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
     return promised_cleanup {
       return $wd->close;
-    } $wd->new_session (http_proxy_url => $url)->then (sub {
+    } $wd->new_session->then (sub {
       my $session = $_[0];
       return promised_cleanup {
         return $session->close;
-      } $session->go (Web::URL->parse_string ("http://$host/host.html"))->then (sub {
-        return $session->execute (q{
-          return document.body.textContent;
-        });
+      } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
+        return $session->screenshot (selector => 'p + p');
       })->then (sub {
-        my $res = $_[0];
-        my $value = $res->json->{value};
+        my $result = $_[0];
         test {
-          is $value, $host;
+          like $result, qr{^\x89PNG};
+          my $path = path (__FILE__)->parent->parent->child ('local/hogfe.png');
+          $path->spew ($result);
         } $c;
       });
     });
   });
-} n => 1, name => 'proxy access';
+} n => 1, name => 'element screenshot';
 
 run_tests;
 
