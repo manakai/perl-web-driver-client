@@ -68,6 +68,157 @@ test {
   });
 } n => 3, name => 'execute with arguments';
 
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
+          return Promise.resolve ().then (function () {
+            return document.querySelector ('p').textContent;
+          });
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          isa_ok $res, 'Web::Driver::Client::Response';
+          ok ! $res->is_error;
+          is $res->json->{value}, $text1;
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute promise';
+
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
+          foo bar baz
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          #warn $error;
+        } $c;
+      });
+    });
+  });
+} n => 2, name => 'execute syntax error';
+
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
+          throw "foo "+"bar "+"baz";
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          like ''.$error, qr{foo bar baz};
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute runtime error';
+
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
+          return Promise.resolve ().then (function () {
+            throw "foo "+"bar "+"baz";
+          });
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          like ''.$error, qr{foo bar baz};
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute promise rejection';
+
 run_tests;
 
 =head1 LICENSE

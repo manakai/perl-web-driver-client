@@ -118,7 +118,7 @@ sub server ($$) {
 push @EXPORT, qw(generate_text);
 sub generate_text () {
   my $v = rand;
-  $v .= chr int rand 0x10FFFF for 1..rand 10;
+  $v .= chr int rand 0x10FFFF for 3..(3 + rand 10);
   return decode_web_utf8 encode_web_utf8 $v;
 } # generate_text
 
