@@ -6,6 +6,7 @@ use lib glob path (__FILE__)->parent->parent->parent->child ('t_deps/modules/*/l
 use Carp;
 use Test::X1;
 use Test::More;
+use Time::HiRes qw(time);
 use Promised::Flow;
 use Web::Encoding;
 use Web::URL;
@@ -16,7 +17,8 @@ my $WD_URL = Web::URL->parse_string ($ENV{TEST_WD_URL})
 
 our @EXPORT = (grep { not /^\$/ }
                @Web::Encoding::EXPORT, @Test::More::EXPORT, @Test::X1::EXPORT,
-               @Promised::Flow::EXPORT);
+               @Promised::Flow::EXPORT,
+               'time');
 
 sub import ($;@) {
   my $from_class = shift;

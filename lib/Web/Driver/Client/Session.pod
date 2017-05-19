@@ -100,7 +100,7 @@ be valid values.  Unsafe user input should not be specified.
 It returns a promise (L<Promise>) that is to be resolved after the
 cookie has been set (or to be rejected with an error).
 
-=item $session->execute ($script, [$arg1, $arg2, ...])->then (sub { $res = shift })
+=item $session->execute ($script, [$arg1, $arg2, ...], $name => $value, ...)->then (sub { $res = shift })
 
 Run a script (the Execute Script comment).
 
@@ -116,6 +116,18 @@ The second argument is an array reference of zero or more arguments to
 the script.  They can be accessed via the C<arguments> object in the
 script.  This argument can be omitted.  The default is an empty
 argument list.
+
+The remaining arguments can be zero or more name/value pairs from
+following options:
+
+=over 4
+
+=item timeout => $seconds
+
+Timeout in seconds.  The default value is 30s.  Note that some
+WebDriver server ignores this option.
+
+=back
 
 It returns a promise (L<Promise>) that is to be resolved with the
 (non-error) response (L<Web::Driver::Client::Response>) object (or to
@@ -236,13 +248,22 @@ used.
 
 L<Web::Driver::Connection>.
 
-=head1 SPECIFICATION
+=head1 SPECIFICATIONS
 
 WebDriver <https://w3c.github.io/webdriver/webdriver-spec.html>.
+
+JsonWireProtocol - selenium - A description of the protocol used by
+WebDriver to communicate with remote instances - Browser automation
+framework
+<https://web.archive.org/web/20160205035909/https://code.google.com/p/selenium/wiki/JsonWireProtocol>.
 
 =head1 AUTHOR
 
 Wakaba <wakaba@suikawiki.org>
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to nobuoka.
 
 =head1 LICENSE
 

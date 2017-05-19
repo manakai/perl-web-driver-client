@@ -97,20 +97,34 @@ sub execute ($$$;%) {
     if ($_[0]) {
       return $self->_execute ($script, $args);
     } else {
-      return $self->http_post (['execute_async'], {
-        script => q{
-          var code = new Function (arguments[0]);
-          var args = arguments[1];
-          var callback = arguments[2];
-          Promise.resolve ().then (function () {
-            return code.apply (null, args);
-          }).then (function (r) {
-            callback ([true, r]);
-          }, function (e) {
-            callback ([false, e]);
+      return Promise->resolve->then (sub {
+        my $timeout = (defined $args{timeout} ? $args{timeout} : 30)*1000;
+        if (not defined $self->{async_script_timeout} or
+            $self->{async_script_timeout} != $timeout) {
+          return $self->http_post (['timeouts'], {
+            type => 'script',
+            ms => $timeout,
+          })->then (sub {
+            die $_[0] if $_[0]->is_error;
+            $self->{async_script_timeout} = $timeout;
           });
-        },
-        args => [$script, $args || []],
+        }
+      })->then (sub {
+        return $self->http_post (['execute_async'], {
+          script => q{
+            var code = new Function (arguments[0]);
+            var args = arguments[1];
+            var callback = arguments[2];
+            Promise.resolve ().then (function () {
+              return code.apply (null, args);
+            }).then (function (r) {
+              callback ([true, r]);
+            }, function (e) {
+              callback ([false, e]);
+            });
+          },
+          args => [$script, $args || []],
+        });
       })->then (sub {
         my $res = $_[0];
         die $res if $res->is_error;
