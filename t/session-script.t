@@ -219,6 +219,46 @@ test {
   });
 } n => 3, name => 'execute promise rejection';
 
+test {
+  my $c = shift;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => rand,
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      my $time1;
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        $time1 = time;
+        return $session->execute (q{
+          return new Promise (function () { });
+        }, [], timeout => 4);
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        my $elapsed = time - $time1;
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          ok $elapsed > 3, "Elapsed time $elapsed (s)";
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute promise timeout';
+
 run_tests;
 
 =head1 LICENSE
