@@ -5,6 +5,7 @@ our $VERSION = '1.0';
 use Carp;
 use MIME::Base64;
 use Web::URL;
+use Web::Driver::Client::Response;
 
 sub new_from_connection_and_session_id ($$$) {
   return bless {connection => $_[1], session_id => $_[2]}, $_[0];
@@ -53,15 +54,78 @@ sub url ($) {
   });
 } # url
 
-sub execute ($$$;%) {
-  my ($self, $script, $args, %args) = @_;
+sub _execute ($$;$) {
+  my ($self, $code, $args) = @_;
   return $self->http_post (['execute'], {
-    script => $script,
+    script => $code,
     args => $args || [],
   })->then (sub {
-    my $res = $_[0];
-    die $res if $res->is_error;
-    return $res;
+    die $_[0] if $_[0]->is_error;
+    return $_[0];
+  });
+} # _execute
+
+sub execute ($$$;%) {
+  my ($self, $script, $args, %args) = @_;
+  return Promise->resolve->then (sub {
+    return $self->{has_promise_execute} if defined $self->{has_promise_execute};
+    return $self->_execute (q{
+      return Promise.resolve ().then (function () { return 4 });
+    })->then (sub {
+      my $res = $_[0];
+      return $self->{has_promise_execute} = 0
+          unless ($res->json->{value} eq 4);
+      return $self->http_post (['execute'], {
+        script => q{ return Promise.reject (6) },
+        args => [],
+      })->then (sub {
+        my $res = $_[0];
+        if ($res->is_error and
+            defined $res->json and
+            ref $res->json eq 'HASH' and
+            defined $res->json->{value} and
+            ref $res->json->{value} eq 'HASH' and
+            defined $res->json->{value}->{error} and
+            $res->json->{value}->{error} eq 6) {
+          return $self->{has_promise_execute} = 1;
+        } else {
+          return $self->{has_promise_execute} = 0;
+        }
+      });
+    });
+  })->then (sub {
+    if ($_[0]) {
+      return $self->_execute ($script, $args);
+    } else {
+      return $self->http_post (['execute_async'], {
+        script => q{
+          var code = new Function (arguments[0]);
+          var args = arguments[1];
+          var callback = arguments[2];
+          Promise.resolve ().then (function () {
+            return code.apply (null, args);
+          }).then (function (r) {
+            callback ([true, r]);
+          }, function (e) {
+            callback ([false, e]);
+          });
+        },
+        args => [$script, $args || []],
+      })->then (sub {
+        my $res = $_[0];
+        die $res if $res->is_error;
+        my $value = $res->json->{value};
+        if ($value->[0]) {
+          return Web::Driver::Client::Response->new_from_json
+              ({value => $value->[1]});
+        } else {
+          die Web::Driver::Client::Response->new_from_json
+              ({status => 400, # something not zero
+                value => {error => "javascript error",
+                          message => $value->[1]}});
+        }
+      });
+    }
   });
 } # execute
 
@@ -113,10 +177,8 @@ sub set_cookie ($$$;%) {
     my $res = $_[0];
     if ($res->is_error) {
       my $json = $res->json;
-      if ((defined $json->{value}->{message} and
-           $json->{value}->{message} =~ /^You may only set cookies on HTML documents/) or
-          (defined $json->{message} and
-           $json->{message} =~ /^You may only set cookies on HTML documents/)) {
+      if (defined $json->{value}->{message} and
+          $json->{value}->{message} =~ /^You may only set cookies on HTML documents/) {
         ## GeckoDriver :-<
 
         ## Note that $name, $value, $args{$key} are not validated!
@@ -135,7 +197,7 @@ sub set_cookie ($$$;%) {
         if ($args{max_age}) {
           $cookie .= '; Max-Age=' . 0+$args{max_age};
         }
-        return $self->execute (q{ document.cookie = arguments[0] }, [$cookie])->then (sub {
+        return $self->_execute (q{ document.cookie = arguments[0] }, [$cookie])->then (sub {
           return undef;
         });
       }
@@ -147,11 +209,10 @@ sub set_cookie ($$$;%) {
 
 sub _select ($$) {
   my ($self, $selector) = @_;
-  return $self->execute (q{
+  return $self->_execute (q{
     return document.querySelector (arguments[0]);
   },  [$selector])->then (sub {
     my $json = $_[0]->json;
-    die $_[0] if $_[0]->is_error;
     return $json->{value};
   });
 } # _select
@@ -174,15 +235,14 @@ sub text_content ($;%) {
     if (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         return undef unless defined $_[0];
-        return $self->execute (q{ return arguments[0].textContent }, [$_[0]]);
+        return $self->_execute (q{ return arguments[0].textContent }, [$_[0]]);
       });
     } else {
-      return $self->execute (q{ return document.documentElement ? document.documentElement.textContent : '' });
+      return $self->_execute (q{ return document.documentElement ? document.documentElement.textContent : '' });
     }
   })->then (sub {
     my $res = $_[0];
     return undef unless defined $res;
-    die $res if $res->is_error;
     return $res->json->{value};
   });
 } # text_content
@@ -193,15 +253,14 @@ sub inner_html ($;%) {
     if (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         return undef unless defined $_[0];
-        return $self->execute (q{ return arguments[0].innerHTML }, [$_[0]]);
+        return $self->_execute (q{ return arguments[0].innerHTML }, [$_[0]]);
       });
     } else {
-      return $self->execute (q{ return document.documentElement ? document.documentElement.outerHTML : '' });
+      return $self->_execute (q{ return document.documentElement ? document.documentElement.outerHTML : '' });
     }
   })->then (sub {
     my $res = $_[0];
     return undef unless defined $res;
-    die $res if $res->is_error;
     return $res->json->{value};
   });
 } # inner_html

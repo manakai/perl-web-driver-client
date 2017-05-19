@@ -107,6 +107,11 @@ Run a script (the Execute Script comment).
 The first argument must be a character string of the JavaScript
 classic script code.
 
+The script may return a JavaScript C<Promise>, in which case the
+response is returned after the resolution or rejection of that
+promise.  (If the WebDriver server does not support this feature, this
+module falls back to the Execute Async Script command transparently.)
+
 The second argument is an array reference of zero or more arguments to
 the script.  They can be accessed via the C<arguments> object in the
 script.  This argument can be omitted.  The default is an empty
@@ -114,8 +119,9 @@ argument list.
 
 It returns a promise (L<Promise>) that is to be resolved with the
 (non-error) response (L<Web::Driver::Client::Response>) object (or to
-be rejected with an error).  The return value of the script, if any,
-can be accessed by C<< $res->json->{value} >>.
+be rejected with an error).  The return value of the script (or the
+returned promise's resolved value), if any, can be accessed by C<<
+$res->json->{value} >>.
 
 =item $session->inner_html (selector => $selector)->then (sub { $html = shift })
 

@@ -9,7 +9,12 @@ sub new_from_response ($$) {
   return bless {response => $_[1]}, $_[0];
 } # new_from_response
 
+sub new_from_json ($$) {
+  return bless {json => $_[1]}, $_[0];
+} # new_from_json
+
 sub is_network_error ($) {
+  return 0 unless defined $_[0]->{response};
   return $_[0]->{response}->is_network_error;
 } # is_network_error
 
@@ -25,7 +30,7 @@ sub json ($) {
 
 sub is_error ($) {
   return 1 if $_[0]->is_network_error;
-  return 1 unless $_[0]->{response}->is_success;
+  return 1 if defined $_[0]->{response} and not $_[0]->{response}->is_success;
   my $json = $_[0]->json;
   if (defined $json and defined $json->{status}) {
     return 1 if $json->{status} != 0;
@@ -35,6 +40,7 @@ sub is_error ($) {
 
 sub is_no_command_error ($) {
   return 0 unless $_[0]->is_error;
+  return 0 if not defined $_[0]->{response};
   return $_[0]->{response}->status == 404;
 } # is_no_command_error
 
@@ -46,12 +52,14 @@ sub stringify ($) {
       my $value = $json->{value};
       if (defined $value and ref $value eq 'HASH' and
           defined $value->{message}) {
-        return "Error $json->{status}: $value->{message}";
-      }
-      if (defined $json->{status}) {
-        return "Error $json->{status}";
+        if (defined $value->{error}) {
+          return "Error $value->{error}: $value->{message}";
+        } else {
+          return "Error: $value->{message}";
+        }
       }
     }
+    return 'Error' unless defined $self->{response};
     return 'Error: ' . $self->{response};
   }
   return 'OK';
