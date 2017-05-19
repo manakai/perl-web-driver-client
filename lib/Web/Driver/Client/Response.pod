@@ -1,0 +1,54 @@
+=head1 NAME
+
+Web::Driver::Client::Response - WebDriver response
+
+=item SYNOPSIS
+
+  $session->execute (q{
+    return document.title;
+  })->then (sub {
+    my $res = $_[0];
+    warn $res->json->{value};
+  });
+
+=head1 DESCRIPTION
+
+The C<Web::Driver::Client::Response> object represents a response from
+the WebDriver server.
+
+=head1 METHODS
+
+There are following methods:
+
+=over 4
+
+=item $value = $res->json
+
+Return the Perl value converted from the JSON data in the response, if
+any, or C<undef> otherwise.
+
+=item $boolean = $res->is_error
+
+Return whether the response represents an error or not.
+
+=item $string = '' . $res
+
+=item $string = $res->stringify
+
+Return a short string representing the response.  This should be
+useful for development.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>
+
+=head1 LICENSE
+
+Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
