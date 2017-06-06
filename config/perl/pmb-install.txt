@@ -1,4 +1,4 @@
-AnyEvent::Util
+AnyEvent~7.13
 Carp~1.38
 Digest::SHA~5.96
 Encode~2.89
