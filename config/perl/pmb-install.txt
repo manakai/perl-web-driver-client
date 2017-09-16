@@ -1,4 +1,4 @@
-AnyEvent::Handle
+AnyEvent::Socket
 Carp~1.38
 Digest::SHA~5.97
 Encode~2.92
