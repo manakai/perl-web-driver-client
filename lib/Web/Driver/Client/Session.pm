@@ -158,10 +158,11 @@ sub get_cookie ($$) {
       });
     }
     die $res if $res->is_error;
+    my $v = $res->json->{value};
     return [map {
       $_->{httponly} = delete $_->{httpOnly};
       $_;
-    } @{$res->json->{value}}];
+    } @{ref $v eq 'HASH' ? [$v] : $v}];
   });
 } # get_cookie
 
