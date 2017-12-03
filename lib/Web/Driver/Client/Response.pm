@@ -47,8 +47,16 @@ sub is_no_command_error ($) {
 sub is_no_such_cookie_error ($) {
   return 0 unless $_[0]->is_error;
   return 0 if not defined $_[0]->{response};
-  return $_[0]->{response}->status == 404 &&
-         $_[0]->json->{value}->{message} eq 'no such cookie';
+
+  return 1 if $_[0]->{response}->status == 404 &&
+              $_[0]->json->{value}->{message} eq 'no such cookie';
+
+  return 1 if $_[0]->{response}->status == 200 &&
+              defined $_[0]->json->{value} &&
+              ref $_[0]->json->{value} eq 'HASH' &&
+              $_[0]->json->{value}->{message} =~ /^no such cookie\n  \(Session info: chrome=/;
+
+  return 0;
 } # is_no_such_cookie_error
 
 sub stringify ($) {
