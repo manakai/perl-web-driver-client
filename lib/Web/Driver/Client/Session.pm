@@ -157,6 +157,7 @@ sub get_cookie ($$) {
         } grep { $_->{name} eq $name } @{$res->json->{value}}];
       });
     }
+    return [] if $res->is_no_such_cookie_error;
     die $res if $res->is_error;
     my $v = $res->json->{value};
     return [map {
