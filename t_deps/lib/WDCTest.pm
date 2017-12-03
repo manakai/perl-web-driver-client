@@ -75,7 +75,7 @@ sub psgi_server ($$) {
     my ($ok, $ng) = @_;
     my $cv = AE::cv;
     $cv->begin;
-    my $host = '127.0.0.1';
+    my $host = $ENV{TEST_SERVER_LISTEN_HOST} || '127.0.0.1';
     my $port = find_listenable_port;
     my $con;
     my $server = tcp_server $host, $port, sub {
@@ -85,6 +85,7 @@ sub psgi_server ($$) {
       promised_cleanup { $cv->end } $con->completed;
     };
     $cv->cb ($ok);
+    $host = $ENV{TEST_SERVER_HOSTNAME} || $host;
     my $origin = Web::URL->parse_string ("http://$host:$port");
     my $close = sub { undef $server; $cv->end };
     $cb->($origin, $close);
