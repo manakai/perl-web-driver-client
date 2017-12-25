@@ -1,6 +1,6 @@
-AnyEvent::Socket
+AnyEvent::Handle
 Carp~1.38
-Digest::SHA~6.00
+Digest::SHA~6.01
 Encode~2.93
 MIME::Base64~3.15
 Net::SSLeay~1.82
