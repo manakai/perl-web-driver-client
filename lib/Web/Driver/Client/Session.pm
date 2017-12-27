@@ -54,28 +54,32 @@ sub url ($) {
   });
 } # url
 
-sub _execute ($$;$) {
-  my ($self, $code, $args) = @_;
-  return $self->http_post (['execute'], {
+sub _execute_promise ($$$;$) {
+  my ($self, $path, $code, $args) = @_;
+  return $self->http_post ($path, {
     script => $code,
     args => $args || [],
   })->then (sub {
     die $_[0] if $_[0]->is_error;
     return $_[0];
   });
-} # _execute
+} # _execute_promise
 
-sub execute ($$$;%) {
-  my ($self, $script, $args, %args) = @_;
+sub _check_execute_command ($$) {
+  my ($self, $path) = @_;
   return Promise->resolve->then (sub {
-    return $self->{has_promise_execute} if defined $self->{has_promise_execute};
-    return $self->_execute (q{
-      return Promise.resolve ().then (function () { return 4 });
+    return $self->http_post ($path, {
+      script => q{ return Promise.resolve ().then (function () { return 4 }); },
+      args => [],
     })->then (sub {
       my $res = $_[0];
-      return $self->{has_promise_execute} = 0
+      if ($res->is_error) {
+        return 'no_command' if ($res->is_no_command_error);
+        die $res;
+      }
+      return 'promise_not_supported'
           unless ($res->json->{value} eq 4);
-      return $self->http_post (['execute'], {
+      return $self->http_post ($path, {
         script => q{ return Promise.reject (6) },
         args => [],
       })->then (sub {
@@ -87,59 +91,106 @@ sub execute ($$$;%) {
             ref $res->json->{value} eq 'HASH' and
             defined $res->json->{value}->{error} and
             $res->json->{value}->{error} eq 6) {
-          return $self->{has_promise_execute} = 1;
+          return 'promise_supported';
         } else {
-          return $self->{has_promise_execute} = 0;
+          return 'promise_not_supported';
         }
       });
     });
-  })->then (sub {
-    if ($_[0]) {
-      return $self->_execute ($script, $args);
-    } else {
-      return Promise->resolve->then (sub {
-        my $timeout = (defined $args{timeout} ? $args{timeout} : 30)*1000;
-        if (not defined $self->{async_script_timeout} or
-            $self->{async_script_timeout} != $timeout) {
-          return $self->http_post (['timeouts'], {
-            type => 'script',
-            ms => $timeout,
-          })->then (sub {
-            die $_[0] if $_[0]->is_error;
-            $self->{async_script_timeout} = $timeout;
-          });
-        }
+  });
+} # _check_execute_command
+
+sub _execute_not_promise ($$$;$%) {
+  my ($self, $path, $script, $args, %args) = @_;
+  return Promise->resolve->then (sub {
+    my $timeout = (defined $args{timeout} ? $args{timeout} : 30)*1000;
+    if (not defined $self->{async_script_timeout} or
+        $self->{async_script_timeout} != $timeout) {
+      return $self->http_post (['timeouts'], {
+        type => 'script',
+        ms => $timeout,
       })->then (sub {
-        return $self->http_post (['execute_async'], {
-          script => q{
-            var code = new Function (arguments[0]);
-            var args = arguments[1];
-            var callback = arguments[2];
-            Promise.resolve ().then (function () {
-              return code.apply (null, args);
-            }).then (function (r) {
-              callback ([true, r]);
-            }, function (e) {
-              callback ([false, e]);
-            });
-          },
-          args => [$script, $args || []],
-        });
-      })->then (sub {
-        my $res = $_[0];
-        die $res if $res->is_error;
-        my $value = $res->json->{value};
-        if ($value->[0]) {
-          return Web::Driver::Client::Response->new_from_json
-              ({value => $value->[1]});
-        } else {
-          die Web::Driver::Client::Response->new_from_json
-              ({status => 400, # something not zero
-                value => {error => "javascript error",
-                          message => $value->[1]}});
-        }
+        die $_[0] if $_[0]->is_error;
+        $self->{async_script_timeout} = $timeout;
       });
     }
+  })->then (sub {
+    return $self->http_post ($path, {
+      script => q{
+        var code = new Function (arguments[0]);
+        var args = arguments[1];
+        var callback = arguments[2];
+        Promise.resolve ().then (function () {
+          return code.apply (null, args);
+        }).then (function (r) {
+          callback ([true, r]);
+        }, function (e) {
+          callback ([false, e]);
+        });
+      },
+      args => [$script, $args || []],
+    });
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    my $value = $res->json->{value};
+    if ($value->[0]) {
+      return Web::Driver::Client::Response->new_from_json
+          ({value => $value->[1]});
+    } else {
+      die Web::Driver::Client::Response->new_from_json
+          ({status => 400, # something not zero
+            value => {error => "javascript error",
+                      message => $value->[1]}});
+    }
+  });
+} # _execute_not_promise
+
+sub _create_execute_method_or_undef ($$$) {
+  my ($self, $path_sync, $path_async) = @_;
+  return Promise->resolve->then(sub {
+    return $self->_check_execute_command ($path_sync)->then(sub {
+      my $execute_command_type = $_[0];
+      if ($execute_command_type eq 'promise_supported') {
+        return sub {
+          my ($self, $script, $args, %args) = @_;
+          return $self->_execute_promise ($path_sync, $script, $args);
+        };
+      } elsif ($execute_command_type eq 'promise_not_supported') {
+        return sub {
+          my ($self, $script, $args, %args) = @_;
+          return $self->_execute_not_promise ($path_async, $script, $args, %args);
+        };
+      } elsif ($execute_command_type eq 'no_command') {
+        return undef;
+      } else {
+        die "Unknown execute command type : $execute_command_type";
+      }
+    });
+  });
+} # _create_execute_method_or_undef
+
+sub _find_execute_method ($) {
+  my ($self) = @_;
+  return Promise->resolve (undef)->then(sub {
+    return $_[0] if defined $_[0];
+    return $self->_create_execute_method_or_undef (['execute', 'sync'], ['execute', 'async']);
+  })->then(sub {
+    return $_[0] if defined $_[0];
+    return $self->_create_execute_method_or_undef (['execute'], ['execute_async']);
+  });
+} # _find_execute_method
+
+sub execute ($$$;%) {
+  my ($self, $script, $args, %args) = @_;
+  return Promise->resolve->then (sub {
+    return $self->{execute_method} if defined $self->{execute_method};
+    return $self->_find_execute_method ()->then(sub {
+      $self->{execute_method} = $_[0] || sub { die 'Execute command not implemented' };
+      return $self->{execute_method};
+    });
+  })->then (sub {
+    return $_[0]->($self, $script, $args, %args);
   });
 } # execute
 
@@ -213,7 +264,7 @@ sub set_cookie ($$$;%) {
         if ($args{max_age}) {
           $cookie .= '; Max-Age=' . 0+$args{max_age};
         }
-        return $self->_execute (q{ document.cookie = arguments[0] }, [$cookie])->then (sub {
+        return $self->execute (q{ document.cookie = arguments[0] }, [$cookie])->then (sub {
           return undef;
         });
       }
@@ -225,7 +276,7 @@ sub set_cookie ($$$;%) {
 
 sub _select ($$) {
   my ($self, $selector) = @_;
-  return $self->_execute (q{
+  return $self->execute (q{
     return document.querySelector (arguments[0]);
   },  [$selector])->then (sub {
     my $json = $_[0]->json;
@@ -251,10 +302,10 @@ sub text_content ($;%) {
     if (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         return undef unless defined $_[0];
-        return $self->_execute (q{ return arguments[0].textContent }, [$_[0]]);
+        return $self->execute (q{ return arguments[0].textContent }, [$_[0]]);
       });
     } else {
-      return $self->_execute (q{ return document.documentElement ? document.documentElement.textContent : '' });
+      return $self->execute (q{ return document.documentElement ? document.documentElement.textContent : '' });
     }
   })->then (sub {
     my $res = $_[0];
@@ -269,10 +320,10 @@ sub inner_html ($;%) {
     if (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         return undef unless defined $_[0];
-        return $self->_execute (q{ return arguments[0].innerHTML }, [$_[0]]);
+        return $self->execute (q{ return arguments[0].innerHTML }, [$_[0]]);
       });
     } else {
-      return $self->_execute (q{ return document.documentElement ? document.documentElement.outerHTML : '' });
+      return $self->execute (q{ return document.documentElement ? document.documentElement.outerHTML : '' });
     }
   })->then (sub {
     my $res = $_[0];
@@ -323,6 +374,7 @@ sub DESTROY ($) {
 =head1 LICENSE
 
 Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
