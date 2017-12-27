@@ -1,4 +1,4 @@
-AnyEvent::Socket
+AnyEvent~7.14
 Carp~1.38
 Digest::SHA~6.01
 Encode~2.93
@@ -8,5 +8,5 @@ Path::Tiny~0.104
 Scalar::Util~1.49
 Socket~2.024
 Term::ANSIColor~4.06
-Test::More~1.302120
+Test::Builder~1.302120
 Time::HiRes~1.9750
