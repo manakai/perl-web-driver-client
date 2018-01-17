@@ -28,12 +28,7 @@ test {
         test {
           isa_ok $res, 'Web::Driver::Client::Response';
         } $c;
-        return $session->http_post (['execute'], {
-          script => q{
-            return document.body.textContent;
-          },
-          args => [],
-        });
+        return $session->execute (q{ return document.body.textContent; });
       })->then (sub {
         my $res = $_[0];
         test {
