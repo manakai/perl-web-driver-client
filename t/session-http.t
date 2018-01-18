@@ -40,7 +40,7 @@ test {
           my $value = $res->json->{value};
 
           # The web element identifier is a constant with the string "element-6066-11e4-a52e-4f735466cecf".
-          # See : https://www.w3.org/TR/webdriver/#dfn-web-element-identifier
+          # See : https://w3c.github.io/webdriver/webdriver-spec.html#dfn-web-element-identifier
           my $web_element_identifier = 'element-6066-11e4-a52e-4f735466cecf';
           # In Json Wire Protocol, "ELEMENT" is used.
           # See : https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol#webelement-json-object
