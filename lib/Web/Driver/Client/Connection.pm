@@ -55,24 +55,14 @@ sub new_session ($;%) {
     desiredCapabilities => $args{desired} || {}, # XXX not documented yet
     ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
   };
+  if ($args{http_proxy_url}) {
+    $session_args->{desiredCapabilities}->{proxy} = {
+      proxyType => 'manual',
+      httpProxy => $args{http_proxy_url}->hostport,
+    };
+  }
   my $res;
-  return $self->http_get (['status'], {})->then (sub {
-    my $res = $_[0];
-    my $json = $res->json;
-    my $maybe_chromedriver = (defined $json->{status} and
-                              not defined $json->{value}->{ready});
-
-    if ($args{http_proxy_url}) {
-      $session_args->{desiredCapabilities}->{proxy} = $maybe_chromedriver ? {
-        proxyType => 'manual',
-        httpProxy => $args{http_proxy_url}->hostport,
-      } : {
-        proxyType => 'manual',
-        httpProxy => $args{http_proxy_url}->host->to_ascii,
-        httpProxyPort => $args{http_proxy_url}->port,
-      };
-    }
-  })->then (sub {
+  return Promise->resolve->then (sub {
     ## ChromeDriver sometimes hungs up without returning any response
     ## or closing connection.
     return promised_wait_until {
@@ -120,6 +110,7 @@ sub DESTROY ($) {
 =head1 LICENSE
 
 Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018 OND Inc. <https://ond-inc.com/>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
