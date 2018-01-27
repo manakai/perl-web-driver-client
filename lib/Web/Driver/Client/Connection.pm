@@ -66,16 +66,17 @@ sub new_session ($;%) {
     ## ChromeDriver sometimes hungs up without returning any response
     ## or closing connection.
     return promised_wait_until {
+      my $timeout = 20;
       return Promise->resolve->then (sub {
         return promised_timeout {
           return $self->http_post (['session'], $session_args);
-        } 10;
+        } $timeout;
       })->then (sub {
         $res = $_[0];
         die $res if $_[0]->is_network_error;
         return 1;
       })->catch (sub {
-        return $self->http_client->abort (message => '|new_session| timeout (20)')->then (sub {
+        return $self->http_client->abort (message => "|new_session| timeout ($timeout)")->then (sub {
           $self->{http_client} = Web::Transport::ConnectionClient->new_from_url
               ($self->{url});
           return 0;
