@@ -1,46 +1,46 @@
-machine:
-  services:
-    - docker
-dependencies:
-  cache_directories:
-    - "local/perlbrew/perls"
-  override:
-    - docker info
-    - docker pull quay.io/wakaba/chromedriver:chromium && docker pull quay.io/wakaba/firefoxdriver:stable :
-        background: true
-        timeout: 600
-
-    - make deps:
-        timeout: 600
-
-test:
-  override:
-    - docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx:
-        parallel: true
-    - TEST_WD_URL=http://localhost:9516 make test :
-        timeout: 600
-        parallel: true
-    - docker logs firefoxdriver:
-        parallel: true
-    - docker kill firefoxdriver:
-        parallel: true
-
-    - docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:chromium /cd:
-        parallel: true
-    - TEST_WD_URL=http://localhost:9515 make test :
-        timeout: 600
-        parallel: true
-    - docker logs chromedriver:
-        parallel: true
-    - docker kill chromedriver:
-        parallel: true
-
-deployment:
-  nightly:
-    branch: nightly
-    commands:
-      - curl -s -S --request POST --header "Authorization:token $GH_AT" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`git rev-parse HEAD`\",\"commit_message\":\"auto-merge nightly into master\"}" "https://api.github.com/repos/manakai/perl-web-driver-client/merges"
-  staging:
-    branch: staging
-    commands:
-      - curl -s -S --request POST --header "Authorization:token $GH_AT" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`git rev-parse HEAD`\",\"commit_message\":\"auto-merge staging into master\"}" "https://api.github.com/repos/manakai/perl-web-driver-client/merges"
+{
+   "dependencies" : {
+      "override" : [
+         "docker info",
+         {
+            "docker pull quay.io/wakaba/chromedriver:chromium && docker pull quay.io/wakaba/firefoxdriver:stable" : {
+               "background" : 1
+            }
+         },
+         "make test-deps"
+      ]
+   },
+   "deployment" : {
+      "nightly" : {
+         "branch" : "nightly",
+         "commands" : [
+            "git rev-parse HEAD > head.txt",
+            "curl -f -s -S --request POST --header \u0022Authorization:token $GITHUB_ACCESS_TOKEN\u0022 --header \u0022Content-Type:application/json\u0022 --data-binary \u0022{\u005C\u0022base\u005C\u0022:\u005C\u0022master\u005C\u0022,\u005C\u0022head\u005C\u0022:\u005C\u0022`cat head.txt`\u005C\u0022,\u005C\u0022commit_message\u005C\u0022:\u005C\u0022auto-merge $CIRCLE_BRANCH into master\u005C\u0022}\u0022 \u0022https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges\u0022"
+         ]
+      },
+      "staging" : {
+         "branch" : "staging",
+         "commands" : [
+            "git rev-parse HEAD > head.txt",
+            "curl -f -s -S --request POST --header \u0022Authorization:token $GITHUB_ACCESS_TOKEN\u0022 --header \u0022Content-Type:application/json\u0022 --data-binary \u0022{\u005C\u0022base\u005C\u0022:\u005C\u0022master\u005C\u0022,\u005C\u0022head\u005C\u0022:\u005C\u0022`cat head.txt`\u005C\u0022,\u005C\u0022commit_message\u005C\u0022:\u005C\u0022auto-merge $CIRCLE_BRANCH into master\u005C\u0022}\u0022 \u0022https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges\u0022"
+         ]
+      }
+   },
+   "machine" : {
+      "services" : [
+         "docker"
+      ]
+   },
+   "test" : {
+      "override" : [
+         "docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx",
+         "TEST_WD_URL=http://localhost:9516 make test",
+         "docker logs firefoxdriver",
+         "docker kill firefoxdriver",
+         "docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:chromium /cd",
+         "TEST_WD_URL=http://localhost:9515 make test",
+         "docker logs chromedriver",
+         "docker kill chromedriver"
+      ]
+   }
+}
