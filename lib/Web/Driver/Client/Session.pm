@@ -194,20 +194,25 @@ sub execute ($$$;%) {
   });
 } # execute
 
+sub get_all_cookies ($) {
+  my ($self) = @_;
+  return $self->http_get (['cookie'])->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return [map {
+      $_->{httponly} = delete $_->{httpOnly};
+      $_;
+    } @{$res->json->{value}}];
+  });
+} # get_all_cookies
+
 sub get_cookie ($$) {
   my ($self, $name) = @_;
   return $self->http_get (['cookie', $name])->then (sub {
     my $res = $_[0];
-    if ($res->is_no_command_error) {
-      return $self->http_get (['cookie'])->then (sub {
-        my $res = $_[0];
-        die $res if $res->is_error;
-        return [map {
-          $_->{httponly} = delete $_->{httpOnly};
-          $_;
-        } grep { $_->{name} eq $name } @{$res->json->{value}}];
-      });
-    }
+    return $self->get_all_cookies->then (sub {
+      return [grep { $_->{name} eq $name } @{$_[0]}];
+    }) if $res->is_no_command_error;
     return [] if $res->is_no_such_cookie_error;
     die $res if $res->is_error;
     my $v = $res->json->{value};
@@ -373,7 +378,8 @@ sub DESTROY ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
+
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
 This library is free software; you can redistribute it and/or modify
