@@ -84,11 +84,52 @@ test {
   });
 } n => 3, name => 'document and element inner html';
 
+test {
+  my $c = shift;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/index.html' => (encode_web_utf8 q{<p onclick="textContent='def'">abc}),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
+        return $session->execute (q{
+          return document.querySelector ('p');
+        });
+      })->then (sub {
+        my $res = $_[0];
+        return $session->click ($res->json->{value});
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, undef;
+        } $c;
+        return $session->execute (q{
+          return document.querySelector ('p').textContent;
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          is $res->json->{value}, 'def';
+        } $c;
+      });
+    });
+  });
+} n => 2, name => 'click';
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

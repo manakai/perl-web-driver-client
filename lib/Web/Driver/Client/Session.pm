@@ -363,6 +363,15 @@ sub screenshot ($;%) {
   });
 } # screenshot
 
+sub click ($$) {
+  my ($self, $element) = @_;
+  return $self->http_post (['element', $element->{'element-6066-11e4-a52e-4f735466cecf'} || $element->{ELEMENT}, 'click'], {})->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # click
+
 sub close ($) {
   my $self = $_[0];
   $self->{closed} = 1;
