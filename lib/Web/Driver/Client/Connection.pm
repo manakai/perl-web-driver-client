@@ -77,8 +77,10 @@ sub new_session ($;%) {
         return 1;
       })->catch (sub {
         return $self->http_client->abort (message => "|new_session| timeout ($timeout)")->then (sub {
-          $self->{http_client} = Web::Transport::ConnectionClient->new_from_url
+          my $new_client = Web::Transport::ConnectionClient->new_from_url
               ($self->{url});
+          $new_client->last_resort_timeout ($self->{http_client}->last_resort_timeout);
+          $self->{http_client} = $new_client;
           return 0;
         });
       });
