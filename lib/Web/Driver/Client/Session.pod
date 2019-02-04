@@ -20,15 +20,20 @@ It returns a promise (L<Promise>) that is to be resolved with a URL
 object (L<Web::URL>) when the URL is obtained (or to be rejected with
 an error).
 
+=item $session->get_all_cookies->then (sub { $cookies = shift })
+
 =item $session->get_cookie ($name)->then (sub { $cookies = shift })
 
-Get cookies by name.
+Get all cookies, or get cookies by name.
 
-The first argument must be a character string of the cookie name.
+For the C<get_cookie> method, the first argument must be a character
+string of the cookie name.
 
 It returns a promise (L<Promise>) that is to be resolved with an array
 reference of zero or more hash references representing cookies (or to
-be rejected with an error).  A cookie has following name/value pairs:
+be rejected with an error).  Even the C<get_cookie> method can return
+multiple values when there are multiple cookies with same names.  A
+cookie has following name/value pairs:
 
 =over 4
 
@@ -267,7 +272,9 @@ Thanks to nobuoka.
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
+
+Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

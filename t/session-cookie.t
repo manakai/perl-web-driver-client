@@ -69,6 +69,48 @@ test {
         return $session->close;
       } $session->go ($go_url)->then (sub {
         my $res = $_[0];
+        return $session->execute (q{
+          document.cookie = 'abc=def';
+          document.cookie = 'xya=abc def';
+        });
+      })->then (sub {
+        return $session->get_all_cookies;
+      })->then (sub {
+        my $values = $_[0];
+        test {
+          is 0+@$values, 2;
+          @$values = sort { $a->{name} cmp $b->{name} } @$values;
+          is $values->[0]->{name}, 'abc';
+          is $values->[0]->{value}, 'def';
+          is $values->[1]->{name}, 'xya';
+          is $values->[1]->{value}, 'abc def';
+        } $c;
+      });
+    });
+  });
+} n => 5, name => 'get_all_cookies';
+
+test {
+  my $c = shift;
+  my $name = rand;
+  my $value = rand;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo/bar.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
+  }, sub {
+    my $url = shift;
+    my $go_url = Web::URL->parse_string ('/foo/bar.html', $url);
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go ($go_url)->then (sub {
+        my $res = $_[0];
         return $session->set_cookie ($name => $value, httponly => 1);
       })->then (sub {
         return $session->get_cookie ($name);
@@ -178,7 +220,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
