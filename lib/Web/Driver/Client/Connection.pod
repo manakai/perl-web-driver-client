@@ -19,6 +19,12 @@ The URL of the HTTP proxy used by the session's browser.  The value
 must be a L<Web::URL> object whose C<scheme> is C<http> and C<host>
 and C<port> identify the proxy server.
 
+=item https_proxy_url => $url
+
+The URL of the TLS proxy (for HTTPS connections) used by the session's
+browser.  The value must be a L<Web::URL> object whose C<scheme> is
+C<http> and C<host> and C<port> identify the proxy server.
+
 =back
 
 The method returns a promise (L<Promise>) which is to be resolved with
@@ -58,7 +64,7 @@ Wakaba <wakaba@suikawiki.org>
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

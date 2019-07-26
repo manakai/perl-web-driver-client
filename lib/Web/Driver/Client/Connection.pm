@@ -55,10 +55,11 @@ sub new_session ($;%) {
     desiredCapabilities => $args{desired} || {}, # XXX not documented yet
     ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
   };
-  if ($args{http_proxy_url}) {
+  if ($args{http_proxy_url} or defined $args{https_proxy_url}) {
     $session_args->{desiredCapabilities}->{proxy} = {
       proxyType => 'manual',
       httpProxy => $args{http_proxy_url}->hostport,
+      sslProxy => $args{https_proxy_url}->hostport,
     };
   }
   my $res;
