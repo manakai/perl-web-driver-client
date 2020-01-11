@@ -55,12 +55,14 @@ sub new_session ($;%) {
     desiredCapabilities => $args{desired} || {}, # XXX not documented yet
     ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
   };
-  if ($args{http_proxy_url} or defined $args{https_proxy_url}) {
+  if (defined $args{http_proxy_url} or defined $args{https_proxy_url}) {
     $session_args->{desiredCapabilities}->{proxy} = {
       proxyType => 'manual',
-      httpProxy => $args{http_proxy_url}->hostport,
-      sslProxy => $args{https_proxy_url}->hostport,
     };
+    $session_args->{desiredCapabilities}->{proxy}->{httpProxy} = $args{http_proxy_url}->hostport
+        if defined $args{http_proxy_url};
+    $session_args->{desiredCapabilities}->{proxy}->{sslProxy} = $args{https_proxy_url}->hostport
+        if defined $args{https_proxy_url};
   }
   my $res;
   return Promise->resolve->then (sub {
