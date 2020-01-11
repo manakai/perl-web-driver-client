@@ -2,10 +2,11 @@ AnyEvent::Socket
 Carp~1.50
 Digest::SHA~6.02
 MIME::Base64~3.15
+Math::BigInt~1.999818
 Net::SSLeay~1.88
 Path::Tiny~0.108
-Scalar::Util~1.50
+Scalar::Util~1.53
 Socket~2.029
-Term::ANSIColor~4.06
-Test::Builder~1.302164
+Term::ANSIColor~5.00
+Test::Builder~1.302170
 Time::HiRes~1.9760
