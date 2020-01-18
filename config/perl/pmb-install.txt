@@ -7,6 +7,6 @@ Net::SSLeay~1.88
 Path::Tiny~0.110
 Scalar::Util~1.53
 Socket~2.029
-Term::ANSIColor~5.00
-Test::Builder~1.302171
+Term::ANSIColor~5.01
+Test::More~1.302171
 Time::HiRes~1.9760
