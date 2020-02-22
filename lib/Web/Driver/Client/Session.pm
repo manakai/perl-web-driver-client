@@ -344,7 +344,7 @@ sub screenshot ($;%) {
       return $self->_select ($args{selector})->then (sub {
         die "Selector |$args{selector}| selects no element"
             unless defined $_[0];
-        return $self->http_get (['element', $_[0]->{ELEMENT}, 'screenshot']);
+        return $self->http_get (['element', $_[0]->{'element-6066-11e4-a52e-4f735466cecf'} || $_[0]->{ELEMENT}, 'screenshot']);
       })->then (sub {
         my $res = $_[0];
         if ($res->is_no_command_error) {
