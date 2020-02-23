@@ -64,6 +64,7 @@ sub new_session ($;%) {
     $session_args->{desiredCapabilities}->{proxy}->{sslProxy} = $args{https_proxy_url}->hostport
         if defined $args{https_proxy_url};
   }
+  $session_args->{desiredCapabilities}->{chromeOptions}->{args} = ['--no-sandbox'];
   my $res;
   return Promise->resolve->then (sub {
     ## ChromeDriver sometimes hungs up without returning any response
