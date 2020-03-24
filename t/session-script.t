@@ -253,7 +253,7 @@ test {
           isa_ok $error, 'Web::Driver::Client::Response';
           ok $error->is_error;
           ok $elapsed > 3, "Elapsed time $elapsed (s)";
-          like ''.$error, qr{^Error: script timeout}s;
+          like ''.$error, qr{^Error:? script timeout}s;
         } $c;
       });
     });
