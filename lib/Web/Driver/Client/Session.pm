@@ -54,54 +54,8 @@ sub url ($) {
   });
 } # url
 
-sub _execute_promise ($$$;$) {
-  my ($self, $path, $code, $args) = @_;
-  return $self->http_post ($path, {
-    script => $code,
-    args => $args || [],
-  })->then (sub {
-    die $_[0] if $_[0]->is_error;
-    return $_[0];
-  });
-} # _execute_promise
-
-sub _check_execute_command ($$) {
-  my ($self, $path) = @_;
-  return Promise->resolve->then (sub {
-    return $self->http_post ($path, {
-      script => q{ return Promise.resolve ().then (function () { return 4 }); },
-      args => [],
-    })->then (sub {
-      my $res = $_[0];
-      if ($res->is_error) {
-        return 'no_command' if ($res->is_no_command_error);
-        die $res;
-      }
-      return 'promise_not_supported'
-          unless ($res->json->{value} eq 4);
-      return $self->http_post ($path, {
-        script => q{ return Promise.reject (6) },
-        args => [],
-      })->then (sub {
-        my $res = $_[0];
-        if ($res->is_error and
-            defined $res->json and
-            ref $res->json eq 'HASH' and
-            defined $res->json->{value} and
-            ref $res->json->{value} eq 'HASH' and
-            defined $res->json->{value}->{error} and
-            $res->json->{value}->{error} eq 6) {
-          return 'promise_supported';
-        } else {
-          return 'promise_not_supported';
-        }
-      });
-    });
-  });
-} # _check_execute_command
-
-sub _execute_not_promise ($$$;$%) {
-  my ($self, $path, $script, $args, %args) = @_;
+sub execute ($$$;%) {
+  my ($self, $script, $args, %args) = @_;
   return Promise->resolve->then (sub {
     my $timeout = (defined $args{timeout} ? $args{timeout} : 30)*1000;
     if (not defined $self->{async_script_timeout} or
@@ -115,7 +69,7 @@ sub _execute_not_promise ($$$;$%) {
       });
     }
   })->then (sub {
-    return $self->http_post ($path, {
+    return $self->http_post (['execute', 'async'], {
       script => q{
         var code = new Function (arguments[0]);
         var args = arguments[1];
@@ -143,54 +97,6 @@ sub _execute_not_promise ($$$;$%) {
             value => {error => "javascript error",
                       message => $value->[1]}});
     }
-  });
-} # _execute_not_promise
-
-sub _create_execute_method_or_undef ($$$) {
-  my ($self, $path_sync, $path_async) = @_;
-  return Promise->resolve->then(sub {
-    return $self->_check_execute_command ($path_sync)->then(sub {
-      my $execute_command_type = $_[0];
-      if ($execute_command_type eq 'promise_supported') {
-        return sub {
-          my ($self, $script, $args, %args) = @_;
-          return $self->_execute_promise ($path_sync, $script, $args);
-        };
-      } elsif ($execute_command_type eq 'promise_not_supported') {
-        return sub {
-          my ($self, $script, $args, %args) = @_;
-          return $self->_execute_not_promise ($path_async, $script, $args, %args);
-        };
-      } elsif ($execute_command_type eq 'no_command') {
-        return undef;
-      } else {
-        die "Unknown execute command type : $execute_command_type";
-      }
-    });
-  });
-} # _create_execute_method_or_undef
-
-sub _find_execute_method ($) {
-  my ($self) = @_;
-  return Promise->resolve (undef)->then(sub {
-    return $_[0] if defined $_[0];
-    return $self->_create_execute_method_or_undef (['execute', 'sync'], ['execute', 'async']);
-  })->then(sub {
-    return $_[0] if defined $_[0];
-    return $self->_create_execute_method_or_undef (['execute'], ['execute_async']);
-  });
-} # _find_execute_method
-
-sub execute ($$$;%) {
-  my ($self, $script, $args, %args) = @_;
-  return Promise->resolve->then (sub {
-    return $self->{execute_method} if defined $self->{execute_method};
-    return $self->_find_execute_method ()->then(sub {
-      $self->{execute_method} = $_[0] || sub { die 'Execute command not implemented' };
-      return $self->{execute_method};
-    });
-  })->then (sub {
-    return $_[0]->($self, $script, $args, %args);
   });
 } # execute
 
@@ -387,7 +293,7 @@ sub DESTROY ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
