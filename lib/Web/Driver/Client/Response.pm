@@ -68,7 +68,12 @@ sub stringify ($) {
       if (defined $value and ref $value eq 'HASH') {
         if (defined $value->{error} and
             $value->{error} eq 'JavaScript Error') {
-          return $value->{js_error}->{stack};
+          my $e = $value->{js_error};
+          my $m = $e->{stack};
+          unless ($m =~ /^\Q@{[$e->{name}]}\E: \Q@{[$e->{message}]}\E/) {
+            $m = "$e->{name}: $e->{message} at $m";
+          }
+          return $m;
         } elsif (defined $value->{message}) {
           if (defined $value->{error}) {
             return "Error $value->{error}: $value->{message}";
