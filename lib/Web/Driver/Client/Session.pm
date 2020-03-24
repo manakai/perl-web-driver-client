@@ -71,16 +71,17 @@ sub execute ($$$;%) {
   })->then (sub {
     return $self->http_post (['execute', 'async'], {
       script => q{
-        var code = new Function (arguments[0]);
-        var args = arguments[1];
-        var callback = arguments[2];
-        Promise.resolve ().then (function () {
-          return code.apply (null, args);
-        }).then (function (r) {
-          callback ([true, r]);
-        }, function (e) {
-          callback ([false, e]);
-        });
+        Promise.resolve().then(()=>{
+          return (new Function(arguments[0])).apply(null,arguments[1]);
+        }).then ((r)=>{
+          return[0,r];
+        },(e)=>{
+          if(e instanceof Error){
+            return[1,{name:e.name,message:e.message,stack:e.stack}];
+          }else{
+            return[2,e];
+          }
+        }).then(arguments[2]);
       },
       args => [$script, $args || []],
     });
@@ -88,13 +89,18 @@ sub execute ($$$;%) {
     my $res = $_[0];
     die $res if $res->is_error;
     my $value = $res->json->{value};
-    if ($value->[0]) {
+    if ($value->[0] == 0) {
       return Web::Driver::Client::Response->new_from_json
           ({value => $value->[1]});
-    } else {
+    } elsif ($value->[0] == 1) {
       die Web::Driver::Client::Response->new_from_json
           ({status => 400, # something not zero
-            value => {error => "javascript error",
+            value => {error => "JavaScript Error",
+                      js_error => $value->[1]}});
+    } else { # $value->[0] == 2
+      die Web::Driver::Client::Response->new_from_json
+          ({status => 400, # something not zero
+            value => {error => "Thrown",
                       message => $value->[1]}});
     }
   });
