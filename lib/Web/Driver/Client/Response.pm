@@ -65,12 +65,21 @@ sub stringify ($) {
     my $json = $self->json;
     if (defined $json) {
       my $value = $json->{value};
-      if (defined $value and ref $value eq 'HASH' and
-          defined $value->{message}) {
-        if (defined $value->{error}) {
-          return "Error $value->{error}: $value->{message}";
-        } else {
-          return "Error: $value->{message}";
+      if (defined $value and ref $value eq 'HASH') {
+        if (defined $value->{error} and
+            $value->{error} eq 'JavaScript Error') {
+          my $e = $value->{js_error};
+          my $m = $e->{stack};
+          unless ($m =~ /^\Q@{[$e->{name}]}\E: \Q@{[$e->{message}]}\E/) {
+            $m = "$e->{name}: $e->{message} at $m";
+          }
+          return $m;
+        } elsif (defined $value->{message}) {
+          if (defined $value->{error}) {
+            return "Error $value->{error}: $value->{message}";
+          } else {
+            return "Error: $value->{message}";
+          }
         }
       }
     }
@@ -84,7 +93,7 @@ sub stringify ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

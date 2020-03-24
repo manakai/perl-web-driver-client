@@ -134,12 +134,12 @@ test {
         test {
           isa_ok $error, 'Web::Driver::Client::Response';
           ok $error->is_error;
-          #warn $error;
+          like ''.$error, qr{^SyntaxError: .+ at .+}s;
         } $c;
       });
     });
   });
-} n => 2, name => 'execute syntax error';
+} n => 3, name => 'execute syntax error';
 
 test {
   my $c = shift;
@@ -172,7 +172,7 @@ test {
         test {
           isa_ok $error, 'Web::Driver::Client::Response';
           ok $error->is_error;
-          like ''.$error, qr{foo bar baz};
+          like ''.$error, qr{^Error Thrown: foo bar baz}, $error;
         } $c;
       });
     });
@@ -212,7 +212,7 @@ test {
         test {
           isa_ok $error, 'Web::Driver::Client::Response';
           ok $error->is_error;
-          like ''.$error, qr{foo bar baz};
+          like ''.$error, qr{^Error Thrown: foo bar baz};
         } $c;
       });
     });
@@ -253,17 +253,18 @@ test {
           isa_ok $error, 'Web::Driver::Client::Response';
           ok $error->is_error;
           ok $elapsed > 3, "Elapsed time $elapsed (s)";
+          like ''.$error, qr{^Error:? script timeout}s;
         } $c;
       });
     });
   });
-} n => 3, name => 'execute promise timeout';
+} n => 4, name => 'execute promise timeout';
 
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
