@@ -76,7 +76,11 @@ sub stringify ($) {
           return $m;
         } elsif (defined $value->{message}) {
           if (defined $value->{error}) {
-            return "Error $value->{error}: $value->{message}";
+            my $m = $value->{message};
+            if ($value->{error} eq 'Thrown' and ref $m) {
+              $m = perl2json_chars $m;
+            }
+            return "Error $value->{error}: $m";
           } else {
             return "Error: $value->{message}";
           }
