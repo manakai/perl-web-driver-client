@@ -198,6 +198,82 @@ test {
         return $session->close;
       } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
         return $session->execute (q{
+          throw new TypeError ("abc def")
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          like ''.$error, qr{^TypeError: abc def.+at}s, $error;
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute runtime error (TypeError)';
+
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
+          throw new window.TypeError ("abc def")
+        });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          ok 0, 'Exception expected';
+        } $c;
+      }, sub {
+        my $error = $_[0];
+        test {
+          isa_ok $error, 'Web::Driver::Client::Response';
+          ok $error->is_error;
+          like ''.$error, qr{^TypeError: abc def.+at}s, $error;
+        } $c;
+      });
+    });
+  });
+} n => 3, name => 'execute runtime error (document TypeError)';
+
+test {
+  my $c = shift;
+  my $text1 = generate_text;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo.html' => encode_web_utf8 ('<p>' . $text1 . '</p>' . generate_text),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/foo.html', $url))->then (sub {
+        return $session->execute (q{
           return Promise.resolve ().then (function () {
             throw "foo "+"bar "+"baz";
           });
