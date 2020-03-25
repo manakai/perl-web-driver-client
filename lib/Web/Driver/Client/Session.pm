@@ -76,7 +76,7 @@ sub execute ($$$;%) {
         }).then ((r)=>{
           return[0,r];
         },(e)=>{
-          if(e instanceof Error){
+          if(e instanceof Error || e instanceof window.Error){
             return[1,{name:e.name,message:e.message,stack:e.stack}];
           }else{
             return[2,e];
