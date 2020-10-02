@@ -10,7 +10,8 @@ use Web::Driver::Client::Session;
 
 sub new_from_url ($$) {
   my $client = Web::Transport::ConnectionClient->new_from_url ($_[1]);
-  return bless {url => $_[1], http_client => $client}, $_[0];
+  return bless {url => $_[1], http_client => $client,
+                cookies => {}}, $_[0];
 } # new_from_url
 
 sub http_client ($) {
@@ -22,8 +23,11 @@ sub http_get ($$) {
   return $self->http_client->request (
     path => $path,
     method => 'GET',
+    headers => $self->_headers,
   )->then (sub {
-    return Web::Driver::Client::Response->new_from_response ($_[0]);
+    my $res = Web::Driver::Client::Response->new_from_response ($_[0]);
+    $self->_process_response_cookies ($res);
+    return $res;
   });
 } # http_get
 
@@ -32,8 +36,11 @@ sub http_delete ($$) {
   return $self->http_client->request (
     path => $path,
     method => 'DELETE',
+    headers => $self->_headers,
   )->then (sub {
-    return Web::Driver::Client::Response->new_from_response ($_[0]);
+    my $res = Web::Driver::Client::Response->new_from_response ($_[0]);
+    $self->_process_response_cookies ($res);
+    return $res;
   });
 } # http_delete
 
@@ -44,10 +51,33 @@ sub http_post ($$$) {
     method => 'POST',
     headers => {'Content-Type' => 'application/json'},
     body => (perl2json_bytes $params),
+    headers => $self->_headers,
   )->then (sub {
-    return Web::Driver::Client::Response->new_from_response ($_[0]);
+    my $res = Web::Driver::Client::Response->new_from_response ($_[0]);
+    $self->_process_response_cookies ($res);
+    return $res;
   });
 } # http_post
+
+sub _headers ($) {
+  my $self = shift;
+  my $cookie = join '; ', map { $_ . '=' . $self->{cookies}->{$_} } keys %{$self->{cookies}};
+  return length $cookie ? {cookie => $cookie} : {};
+} # _headers
+
+sub _process_response_cookies ($$) {
+  my ($self, $res) = @_;
+
+  my $r = $res->{response};
+  return if $r->is_network_error;
+
+  for my $value (@{$r->header_all ('set-cookie')}) {
+    # XXX cookie parsing
+    if ($value =~ /^([^;=]+)=([^;=]*);/) {
+      $self->{cookies}->{$1} = $2;
+    }
+  }
+} # _process_response_cookies
 
 sub new_session ($;%) {
   my ($self, %args) = @_;
