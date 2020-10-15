@@ -252,7 +252,16 @@ sub inner_html ($;%) {
 sub screenshot ($;%) {
   my ($self, %args) = @_;
   return Promise->resolve->then (sub {
-    if (defined $args{selector}) {
+    if (defined $args{element}) {
+      return $self->http_get (['element', $args{element}->{'element-6066-11e4-a52e-4f735466cecf'} || $args{element}->{ELEMENT}, 'screenshot'])->then (sub {
+        my $res = $_[0];
+        if ($res->is_no_command_error) {
+          carp "Element screenshot is not supported by the WebDriver server";
+          return $self->http_get (['screenshot']);
+        }
+        return $res;
+      });
+    } elsif (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         die "Selector |$args{selector}| selects no element"
             unless defined $_[0];
