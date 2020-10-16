@@ -79,7 +79,7 @@ test {
       } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
         return $session->execute (q{ return document.querySelector ('p + p') });
       })->then (sub {
-        return $session->screenshot (element => $_[0]);
+        return $session->screenshot (element => $_[0]->json->{value});
       })->then (sub {
         my $result = $_[0];
         test {
