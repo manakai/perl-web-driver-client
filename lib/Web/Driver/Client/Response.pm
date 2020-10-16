@@ -67,9 +67,11 @@ sub is_no_such_cookie_error ($) {
   return 0 unless $_[0]->is_error;
   return 0 if not defined $_[0]->{response};
 
+  ## Spec & GeckoDriver
   return 1 if $_[0]->{response}->status == 404 &&
-              $_[0]->json->{value}->{message} eq 'no such cookie';
+              $_[0]->json->{value}->{error} eq 'no such cookie';
 
+  ## ChromeDriver
   return 1 if $_[0]->{response}->status == 200 &&
               defined $_[0]->json->{value} &&
               ref $_[0]->json->{value} eq 'HASH' &&
