@@ -38,19 +38,40 @@ sub is_error ($) {
   return 0;
 } # is_error
 
+## ChromeDriver (unknown command):
+## Status: 404
+## Content-Type: text/plain
+##
+## unknown command: {path}
+##
+## GeckoDriver (no such element):
+## Status: 404
+##
+## {"value":{"error":"no such element","message":"Web element reference not seen before: {element id}...
 sub is_no_command_error ($) {
   return 0 unless $_[0]->is_error;
-  return 0 if not defined $_[0]->{response};
-  return $_[0]->{response}->status == 404;
+
+  my $res = $_[0]->{response};
+  return 0 if not defined $res;
+  return 0 unless $res->status == 404;
+
+  my $json = $_[0]->json;
+  return 1 if not defined $json;
+
+  my $error = eval { $json->{value}->{error} } // '';
+  return 1 if $error eq '';
+  return $error eq 'unknown command';
 } # is_no_command_error
 
 sub is_no_such_cookie_error ($) {
   return 0 unless $_[0]->is_error;
   return 0 if not defined $_[0]->{response};
 
+  ## Spec & GeckoDriver
   return 1 if $_[0]->{response}->status == 404 &&
-              $_[0]->json->{value}->{message} eq 'no such cookie';
+              $_[0]->json->{value}->{error} eq 'no such cookie';
 
+  ## ChromeDriver
   return 1 if $_[0]->{response}->status == 200 &&
               defined $_[0]->json->{value} &&
               ref $_[0]->json->{value} eq 'HASH' &&

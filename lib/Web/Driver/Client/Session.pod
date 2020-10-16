@@ -178,11 +178,18 @@ commands).
 
 Zero or more options can be specified as name/value pair arguments.
 
-If the C<selector> option is specified, an element screenshot of the
-element selected by the value is taken.  The value must be a character
-string of the group of selectors.  Otherwise, a window screenshot is
-taken.  If the WebDriver server does not support Take Element
-Screenshot command, this option is ignored.
+If the C<element> option is specified, an element screenshot of the
+element is taken.  The value must be a Web element hash reference.
+
+Otherwise, if the C<selector> option is specified, an element
+screenshot of the element selected by the value is taken.  The value
+must be a character string of the group of selectors.
+
+Otherwise, a window screenshot is taken.
+
+If the WebDriver server does not support Take Element Screenshot
+command, C<element> and C<selector> options are ignored and fallbacked
+to the window screenshot.
 
 It returns a promise (L<Promise>) that is to be resolved with the byte
 string of the screenshot image data (or to be rejected with an error).
@@ -282,7 +289,7 @@ Thanks to nobuoka.
 
 =head1 LICENSE
 
-Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 

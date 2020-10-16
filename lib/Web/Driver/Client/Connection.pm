@@ -94,6 +94,9 @@ sub new_session ($;%) {
     $session_args->{desiredCapabilities}->{proxy}->{sslProxy} = $args{https_proxy_url}->hostport
         if defined $args{https_proxy_url};
   }
+  ## <https://bugs.chromium.org/p/chromium/issues/detail?id=736452>
+  push @{$session_args->{desiredCapabilities}->{chromeOptions}->{args} ||= []},
+      '--disable-dev-shm-usage';
   my $res;
   return Promise->resolve->then (sub {
     ## ChromeDriver sometimes hungs up without returning any response

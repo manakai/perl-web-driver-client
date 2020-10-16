@@ -122,9 +122,6 @@ sub get_cookie ($$) {
   my ($self, $name) = @_;
   return $self->http_get (['cookie', $name])->then (sub {
     my $res = $_[0];
-    return $self->get_all_cookies->then (sub {
-      return [grep { $_->{name} eq $name } @{$_[0]}];
-    }) if $res->is_no_command_error;
     return [] if $res->is_no_such_cookie_error;
     die $res if $res->is_error;
     my $v = $res->json->{value};
@@ -252,7 +249,16 @@ sub inner_html ($;%) {
 sub screenshot ($;%) {
   my ($self, %args) = @_;
   return Promise->resolve->then (sub {
-    if (defined $args{selector}) {
+    if (defined $args{element}) {
+      return $self->http_get (['element', $args{element}->{'element-6066-11e4-a52e-4f735466cecf'} || $args{element}->{ELEMENT}, 'screenshot'])->then (sub {
+        my $res = $_[0];
+        if ($res->is_no_command_error) {
+          carp "Element screenshot is not supported by the WebDriver server";
+          return $self->http_get (['screenshot']);
+        }
+        return $res;
+      });
+    } elsif (defined $args{selector}) {
       return $self->_select ($args{selector})->then (sub {
         die "Selector |$args{selector}| selects no element"
             unless defined $_[0];

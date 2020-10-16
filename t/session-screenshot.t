@@ -58,13 +58,43 @@ test {
       });
     });
   });
-} n => 1, name => 'element screenshot';
+} n => 1, name => 'element screenshot by selector';
+
+test {
+  my $c = shift;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/index.html' => (encode_web_utf8 '<p>abcde<p>xyabcd'),
+  }, sub {
+    my $url = shift;
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go (Web::URL->parse_string ('/index.html', $url))->then (sub {
+        return $session->execute (q{ return document.querySelector ('p + p') });
+      })->then (sub {
+        return $session->screenshot (element => $_[0]->json->{value});
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          like $result, qr{^\x89PNG};
+        } $c;
+      });
+    });
+  });
+} n => 1, name => 'element screenshot by element';
 
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
