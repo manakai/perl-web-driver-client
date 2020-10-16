@@ -122,9 +122,6 @@ sub get_cookie ($$) {
   my ($self, $name) = @_;
   return $self->http_get (['cookie', $name])->then (sub {
     my $res = $_[0];
-    return $self->get_all_cookies->then (sub {
-      return [grep { $_->{name} eq $name } @{$_[0]}];
-    }) if $res->is_no_command_error;
     return [] if $res->is_no_such_cookie_error;
     die $res if $res->is_error;
     my $v = $res->json->{value};
