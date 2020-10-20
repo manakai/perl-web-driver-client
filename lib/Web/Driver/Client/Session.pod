@@ -194,6 +194,15 @@ to the window screenshot.
 It returns a promise (L<Promise>) that is to be resolved with the byte
 string of the screenshot image data (or to be rejected with an error).
 
+=item $promise = $session->set_window_dimension ($width, $height)
+
+Set the window's width and height.  The first argument must be the
+number of pixels of the window's width.  The second argument must be
+the number of pixels of the window's height.
+
+It returns a promise (L<Promise>) that is to be resolved when the
+request is processed.
+
 =item $promise = $session->switch_to_frame_by_selector ($selector)
 
 Select a browsing context (the Switch To Frame command).

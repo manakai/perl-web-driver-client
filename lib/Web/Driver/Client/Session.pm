@@ -246,6 +246,18 @@ sub inner_html ($;%) {
   });
 } # inner_html
 
+sub set_window_dimension ($$$) {
+  my ($self, $width, $height) = @_;
+  return $self->http_post (['window', 'rect'], {
+    width => $width,
+    height => $height,
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # set_window_dimension
+
 sub screenshot ($;%) {
   my ($self, %args) = @_;
   return Promise->resolve->then (sub {
