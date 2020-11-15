@@ -1,4 +1,4 @@
-AnyEvent::Handle
+AnyEvent::Util
 Carp~1.50
 Digest::SHA~6.02
 MIME::Base64~3.16
