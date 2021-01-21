@@ -1,12 +1,12 @@
-AnyEvent::Util
+AnyEvent::Handle
 Carp~1.50
 Digest::SHA~6.02
 MIME::Base64~3.16
 Math::BigInt~1.999818
-Net::SSLeay~1.88
+Net::SSLeay~1.90
 Path::Tiny~0.114
 Scalar::Util~1.55
 Socket~2.031
 Term::ANSIColor~5.01
-Test::More~1.302183
+Test::Builder~1.302183
 Time::HiRes~1.9764
