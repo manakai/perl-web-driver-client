@@ -189,7 +189,7 @@
                   "filters" : {
                      "branches" : {
                         "only" : [
-                           "staging"
+                           "master"
                         ]
                      }
                   }
