@@ -5,7 +5,7 @@
             "CIRCLE_ARTIFACTS" : "/tmp/circle-artifacts/build"
          },
          "machine" : {
-            "image" : "ubuntu-2004:202008-01"
+            "image" : "ubuntu-2004:202101-01"
          },
          "steps" : [
             "checkout",
@@ -79,7 +79,7 @@
       },
       "deploy_nightly" : {
          "machine" : {
-            "image" : "ubuntu-2004:202008-01"
+            "image" : "ubuntu-2004:202101-01"
          },
          "steps" : [
             "checkout",
@@ -92,7 +92,7 @@
       },
       "deploy_staging" : {
          "machine" : {
-            "image" : "ubuntu-2004:202008-01"
+            "image" : "ubuntu-2004:202101-01"
          },
          "steps" : [
             "checkout",
@@ -105,7 +105,7 @@
       },
       "gaa4" : {
          "machine" : {
-            "image" : "ubuntu-2004:202008-01"
+            "image" : "ubuntu-2004:202101-01"
          },
          "steps" : [
             "checkout",
@@ -126,7 +126,7 @@
             },
             {
                "deploy" : {
-                  "command" : "git commit -m auto"
+                  "command" : "git diff-index --quiet HEAD --cached || git commit -m auto"
                }
             },
             {
