@@ -29,6 +29,7 @@ sub json ($) {
 } # json
 
 sub is_error ($) {
+  return 1 if $_[0]->{is_error};
   return 1 if $_[0]->is_network_error;
   return 1 if defined $_[0]->{response} and not $_[0]->{response}->is_success;
   my $json = $_[0]->json;
@@ -37,6 +38,10 @@ sub is_error ($) {
   }
   return 0;
 } # is_error
+
+sub mark_as_error ($) {
+  $_[0]->{is_error} = 1;
+} # mark_as_error
 
 ## ChromeDriver (unknown command):
 ## Status: 404

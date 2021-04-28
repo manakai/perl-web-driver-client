@@ -89,6 +89,10 @@ sub execute ($$$;%) {
     my $res = $_[0];
     die $res if $res->is_error;
     my $value = $res->json->{value};
+    if (not defined $value or not defined $value->[0]) {
+      $res->mark_as_error;
+      die $res;
+    }
     if ($value->[0] == 0) {
       return Web::Driver::Client::Response->new_from_json
           ({value => $value->[1]});
@@ -317,7 +321,7 @@ sub DESTROY ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2021 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
