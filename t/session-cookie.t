@@ -244,6 +244,8 @@ test {
       })->then (sub {
         return $session->delete_all_cookies;
       })->then (sub {
+        return $session->get_all_cookies;
+      })->then (sub {
         my $values = $_[0];
         test {
           is 0+@$values, 0;
