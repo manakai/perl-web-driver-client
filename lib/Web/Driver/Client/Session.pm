@@ -192,6 +192,15 @@ sub set_cookie ($$$;%) {
   });
 } # set_cookie
 
+sub delete_all_cookies ($) {
+  my $self = shift;
+  return $self->http_delete (['cookie'], {
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+  });
+} # delete_all_cookies
+
 sub _select ($$) {
   my ($self, $selector) = @_;
   return $self->execute (q{

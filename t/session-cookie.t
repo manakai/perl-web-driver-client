@@ -216,11 +216,50 @@ test {
   });
 } n => 4, name => 'cookie non-html';
 
+test {
+  my $c = shift;
+  my $name = rand;
+  my $value = rand;
+  return promised_cleanup {
+    done $c;
+    undef $c;
+  } server ({
+    '/foo/bar.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
+  }, sub {
+    my $url = shift;
+    my $go_url = Web::URL->parse_string ('/foo/bar.html', $url);
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
+    return promised_cleanup {
+      return $wd->close;
+    } $wd->new_session->then (sub {
+      my $session = $_[0];
+      return promised_cleanup {
+        return $session->close;
+      } $session->go ($go_url)->then (sub {
+        my $res = $_[0];
+        return $session->execute (q{
+          document.cookie = 'abc=def';
+          document.cookie = 'xya=abc def';
+        });
+      })->then (sub {
+        return $session->delete_all_cookies;
+      })->then (sub {
+        return $session->get_all_cookies;
+      })->then (sub {
+        my $values = $_[0];
+        test {
+          is 0+@$values, 0;
+        } $c;
+      });
+    });
+  });
+} n => 1, name => 'delete_all_cookies';
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2019 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2021 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

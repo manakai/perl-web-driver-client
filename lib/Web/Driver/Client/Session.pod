@@ -105,6 +105,13 @@ be valid values.  Unsafe user input should not be specified.
 It returns a promise (L<Promise>) that is to be resolved after the
 cookie has been set (or to be rejected with an error).
 
+=item $promise = $session->delete_all_cookies
+
+Delete all cookies.
+
+It returns a promise (L<Promise>) that is to be resolved after the
+removal.
+
 =item $session->execute ($script, [$arg1, $arg2, ...], $name => $value, ...)->then (sub { $res = shift })
 
 Run a script (the Execute Script comment).
@@ -298,7 +305,7 @@ Thanks to nobuoka.
 
 =head1 LICENSE
 
-Copyright 2016-2020 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2021 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
