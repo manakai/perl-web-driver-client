@@ -223,6 +223,15 @@ sub switch_to_frame_by_selector ($$) {
   });
 } # switch_to_frame_by_selector
 
+sub switch_to_top_frame ($) {
+  my ($self) = @_;
+  return $self->http_post (['frame'], {id => undef})->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # switch_to_top_frame
+
 sub text_content ($;%) {
   my ($self, %args) = @_;
   return Promise->resolve->then (sub {
