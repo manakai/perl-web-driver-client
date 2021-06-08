@@ -212,12 +212,21 @@ request is processed.
 
 =item $promise = $session->switch_to_frame_by_selector ($selector)
 
-Select a browsing context (the Switch To Frame command).
+Select a nested browsing context of the current browsing context (the
+Switch To Frame command).
 
 The first argument must be a character string of the group of
 selectors used to select an C<iframe> element.
 
 It returns a promise (L<Promise>) that is to be resolved when a
+browsing context is selected (or to be rejected with an error).
+
+=item $promise = $session->switch_to_top_frame
+
+Select the current top-level browsing context (the Switch To Frame
+command).
+
+It returns a promise (L<Promise>) that is to be resolved when the
 browsing context is selected (or to be rejected with an error).
 
 =item $session->click ($element)->then (sub { ... })

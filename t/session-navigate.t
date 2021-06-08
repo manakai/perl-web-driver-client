@@ -104,10 +104,22 @@ test {
         test {
           is $res->json->{value}, $body2;
         } $c;
+        return $session->switch_to_top_frame;
+      })->then (sub {
+        my $result = $_[0];
+        test {
+          is $result, undef;
+        } $c;
+        return $session->execute (q{ return document.getElementById ('data').textContent });
+      })->then (sub {
+        my $res = $_[0];
+        test {
+          is $res->json->{value}, $body1;
+        } $c;
       });
     });
   });
-} n => 3, name => 'navigate to frame';
+} n => 5, name => 'navigate to frame';
 
 test {
   my $c = shift;
@@ -192,7 +204,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2021 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
