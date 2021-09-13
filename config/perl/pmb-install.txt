@@ -5,7 +5,7 @@ MIME::Base64~3.16
 Math::BigInt~1.999823
 Net::SSLeay~1.90
 Path::Tiny~0.118
-Scalar::Util~1.57
+Scalar::Util~1.59
 Socket~2.032
 Term::ANSIColor~5.01
 Test::More~1.302186
