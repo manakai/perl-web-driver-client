@@ -4,7 +4,7 @@ Digest::SHA~6.02
 MIME::Base64~3.16
 Math::BigInt~1.999827
 Net::SSLeay~1.90
-Path::Tiny~0.118
+Path::Tiny~0.120
 Scalar::Util~1.60
 Socket~2.032
 Term::ANSIColor~5.01
