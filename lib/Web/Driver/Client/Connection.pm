@@ -49,9 +49,11 @@ sub http_post ($$$) {
   return $self->http_client->request (
     path => $path,
     method => 'POST',
-    headers => {'Content-Type' => 'application/json'},
     body => (perl2json_bytes $params),
-    headers => $self->_headers,
+    headers => {
+      'Content-Type' => 'application/json',
+      %{$self->_headers},
+    },
   )->then (sub {
     my $res = Web::Driver::Client::Response->new_from_response ($_[0]);
     $self->_process_response_cookies ($res);
@@ -148,7 +150,8 @@ sub DESTROY ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2017 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2022 Wakaba <wakaba@suikawiki.org>.
+
 Copyright 2018 OND Inc. <https://ond-inc.com/>.
 
 This library is free software; you can redistribute it and/or modify
