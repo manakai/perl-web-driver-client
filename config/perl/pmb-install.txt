@@ -2,7 +2,7 @@ AnyEvent~7.17
 Carp~1.50
 Digest::SHA~6.02
 MIME::Base64~3.16
-Math::BigInt~1.999829
+Math::BigInt~1.999830
 Net::SSLeay~1.92
 Path::Tiny~0.122
 Scalar::Util~1.62
