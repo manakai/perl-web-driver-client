@@ -1,15 +1,15 @@
 package Web::Driver::Client::Connection;
 use strict;
 use warnings;
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 use JSON::PS;
 use Promised::Flow;
-use Web::Transport::ConnectionClient;
+use Web::Transport::BasicClient;
 use Web::Driver::Client::Response;
 use Web::Driver::Client::Session;
 
 sub new_from_url ($$) {
-  my $client = Web::Transport::ConnectionClient->new_from_url ($_[1]);
+  my $client = Web::Transport::BasicClient->new_from_url ($_[1]);
   return bless {url => $_[1], http_client => $client,
                 cookies => {}}, $_[0];
 } # new_from_url
@@ -115,9 +115,10 @@ sub new_session ($;%) {
         return 1;
       })->catch (sub {
         return $self->http_client->abort (message => "|new_session| timeout ($timeout)")->then (sub {
-          my $new_client = Web::Transport::ConnectionClient->new_from_url
-              ($self->{url});
-          $new_client->last_resort_timeout ($self->{http_client}->last_resort_timeout);
+          my $new_client = Web::Transport::BasicClient->new_from_url
+              ($self->{url}, {
+                last_resort_timeout => $self->{http_client}->last_resort_timeout,
+              });
           $self->{http_client} = $new_client;
           return 0;
         });
