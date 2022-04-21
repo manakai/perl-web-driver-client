@@ -8,6 +8,8 @@ use Web::Transport::BasicClient;
 use Web::Driver::Client::Response;
 use Web::Driver::Client::Session;
 
+push our @CARP_NOT, qw(Web::Transport::BasicClient);
+
 sub new_from_url ($$) {
   my $client = Web::Transport::BasicClient->new_from_url ($_[1]);
   return bless {url => $_[1], http_client => $client,
