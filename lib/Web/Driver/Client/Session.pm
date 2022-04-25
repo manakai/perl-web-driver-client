@@ -7,6 +7,8 @@ use MIME::Base64;
 use Web::URL;
 use Web::Driver::Client::Response;
 
+push our @CARP_NOT, qw(Web::Driver::Client::Connection);
+
 sub new_from_connection_and_session_id ($$$) {
   return bless {connection => $_[1], session_id => $_[2]}, $_[0];
 } # new_from_connection_and_session_id
