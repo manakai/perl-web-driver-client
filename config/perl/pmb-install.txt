@@ -1,11 +1,11 @@
-AnyEvent::Handle
+AnyEvent::Socket
 Carp~1.50
-Digest::SHA~6.02
+Digest::SHA~6.03
 MIME::Base64~3.16
 Math::BigInt~1.999837
 Net::SSLeay~1.92
 Path::Tiny~0.122
-Scalar::Util~1.62
+Scalar::Util~1.63
 Socket~2.035
 Term::ANSIColor~5.01
 Test::Builder~1.302191
