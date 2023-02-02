@@ -1,4 +1,4 @@
-AnyEvent::Util
+AnyEvent::Socket
 Carp~1.50
 Digest::SHA~6.03
 MIME::Base64~3.16
@@ -8,5 +8,5 @@ Path::Tiny~0.144
 Scalar::Util~1.63
 Socket~2.036
 Term::ANSIColor~5.01
-Test::Builder~1.302191
+Test::Builder~1.302192
 Time::HiRes~1.9764
