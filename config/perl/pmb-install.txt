@@ -8,5 +8,5 @@ Path::Tiny~0.144
 Scalar::Util~1.63
 Socket~2.036
 Term::ANSIColor~5.01
-Test::More~1.302195
+Test::Builder~1.302195
 Time::HiRes~1.9764
