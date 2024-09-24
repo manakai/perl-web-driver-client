@@ -105,11 +105,6 @@ sub new_session ($;%) {
                                    %{$session_args->{requiredCapabilities} or {}}};
   $session_args->{capabilities}->{'goog:chromeOptions'} = delete $session_args->{capabilities}->{chromeOptions};
 
-  ## experimental
-  #delete $session_args->{desiredCapabilities};
-  #delete $session_args->{requiredCapabilities};
-  delete $session_args->{capabilities};
-
   my $res;
   return Promise->resolve->then (sub {
     ## ChromeDriver sometimes hungs up without returning any response
@@ -122,10 +117,27 @@ sub new_session ($;%) {
         } $timeout;
       })->then (sub {
         $res = $_[0];
+        if (defined $session_args->{capabilities}->{proxy} and
+            defined $session_args->{capabilities}->{proxy}->{proxyType} and
+            not defined $res->json->{value}->{capabilities}->{proxy}->{proxyType}) {
+          delete $session_args->{capabilities};
+          ## GeckoDriver fails to support capabilities.proxy
+          my $json = $res->json;
+          my $session_id = $json->{sessionId};
+          if (defined $json->{value} and ref $json->{value} eq 'HASH' and
+              defined $json->{value}->{sessionId}) {
+            $session_id = $json->{value}->{sessionId};
+          }
+          my $session = Web::Driver::Client::Session->new_from_connection_and_session_id
+              ($self, $session_id);
+          return $session->close->then (sub {
+            return 0;
+          });
+        }
         die $res if $_[0]->is_network_error;
         return 1;
       })->catch (sub {
-        return $self->http_client->abort (message => "|new_session| timeout ($timeout)")->then (sub {
+        return $self->http_client->abort (message => "|new_session| timeout ($timeout, $_[0])")->then (sub {
           my $new_client = Web::Transport::BasicClient->new_from_url
               ($self->{url}, {
                 last_resort_timeout => $self->{http_client}->last_resort_timeout,
