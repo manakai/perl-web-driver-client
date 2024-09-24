@@ -106,8 +106,9 @@ sub new_session ($;%) {
   $session_args->{capabilities}->{'goog:chromeOptions'} = delete $session_args->{capabilities}->{chromeOptions};
 
   ## experimental
-  delete $session_args->{desiredCapabilities};
-  delete $session_args->{requiredCapabilities};
+  #delete $session_args->{desiredCapabilities};
+  #delete $session_args->{requiredCapabilities};
+  delete $session_args->{capabilities};
 
   my $res;
   return Promise->resolve->then (sub {
