@@ -88,6 +88,7 @@ sub new_session ($;%) {
   my $session_args = {
     desiredCapabilities => $args{desired} || {}, # XXX not documented yet
     ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
+    capabilities => {%{$args{desired} or {}}, %{$args{required} or {}}},
   };
   if (defined $args{http_proxy_url} or defined $args{https_proxy_url}) {
     $session_args->{desiredCapabilities}->{proxy} = {
