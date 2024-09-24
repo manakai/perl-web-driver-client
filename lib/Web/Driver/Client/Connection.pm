@@ -88,7 +88,6 @@ sub new_session ($;%) {
   my $session_args = {
     desiredCapabilities => $args{desired} || {}, # XXX not documented yet
     ($args{required} ? (requiredCapabilities => $args{required}) : ()), # XXX at risk
-    capabilities => {%{$args{desired} or {}}, %{$args{required} or {}}},
   };
   if (defined $args{http_proxy_url} or defined $args{https_proxy_url}) {
     $session_args->{desiredCapabilities}->{proxy} = {
@@ -102,6 +101,9 @@ sub new_session ($;%) {
   ## <https://bugs.chromium.org/p/chromium/issues/detail?id=736452>
   push @{$session_args->{desiredCapabilities}->{chromeOptions}->{args} ||= []},
       '--disable-dev-shm-usage';
+  $session_args->{capabilities} = {%{$session_args->{desiredCapabilities}},
+                                   %{$session_args->{requiredCapabilities}}};
+  $session_args->{capabilities}->{'goog:chromeOptions'} = delete $session_args->{capabilities}->{chromeOptions};
   my $res;
   return Promise->resolve->then (sub {
     ## ChromeDriver sometimes hungs up without returning any response
