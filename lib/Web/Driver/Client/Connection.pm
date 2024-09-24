@@ -97,7 +97,18 @@ sub new_session ($;%) {
         if defined $args{http_proxy_url};
     $session_args->{desiredCapabilities}->{proxy}->{sslProxy} = $args{https_proxy_url}->hostport
         if defined $args{https_proxy_url};
-  }
+
+    ## GeckoDriver fails to support capabilities.proxy
+    $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.type"} = 1;
+    if (defined $args{http_proxy_url}) {
+      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.http"} = $args{http_proxy_url}->host->to_ascii;
+      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.http_port"} = $args{http_proxy_url}->port;
+    }
+    if (defined $args{https_proxy_url}) {
+      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.ssl"} = $args{https_proxy_url}->host->to_ascii;
+      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.ssl_port"} = $args{https_proxy_url}->port;
+    }
+  } # proxy
   ## <https://bugs.chromium.org/p/chromium/issues/detail?id=736452>
   push @{$session_args->{desiredCapabilities}->{chromeOptions}->{args} ||= []},
       '--disable-dev-shm-usage';
@@ -117,23 +128,6 @@ sub new_session ($;%) {
         } $timeout;
       })->then (sub {
         $res = $_[0];
-        if (defined $session_args->{capabilities}->{proxy} and
-            defined $session_args->{capabilities}->{proxy}->{proxyType} and
-            not defined $res->json->{value}->{capabilities}->{proxy}->{proxyType}) {
-          delete $session_args->{capabilities};
-          ## GeckoDriver fails to support capabilities.proxy
-          my $json = $res->json;
-          my $session_id = $json->{sessionId};
-          if (defined $json->{value} and ref $json->{value} eq 'HASH' and
-              defined $json->{value}->{sessionId}) {
-            $session_id = $json->{value}->{sessionId};
-          }
-          my $session = Web::Driver::Client::Session->new_from_connection_and_session_id
-              ($self, $session_id);
-          return $session->close->then (sub {
-            return 0;
-          });
-        }
         die $res if $_[0]->is_network_error;
         return 1;
       })->catch (sub {
@@ -174,7 +168,7 @@ sub DESTROY ($) {
 
 =head1 LICENSE
 
-Copyright 2016-2022 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2024 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2018 OND Inc. <https://ond-inc.com/>.
 
