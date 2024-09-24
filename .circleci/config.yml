@@ -85,7 +85,7 @@
             "checkout",
             {
                "deploy" : {
-                  "command" : "git rev-parse HEAD > head.txt\u000Acurl -f -s -S --request POST --header \u0022Authorization:token $GITHUB_ACCESS_TOKEN\u0022 --header \u0022Content-Type:application/json\u0022 --data-binary \u0022{\u005C\u0022base\u005C\u0022:\u005C\u0022master\u005C\u0022,\u005C\u0022head\u005C\u0022:\u005C\u0022`cat head.txt`\u005C\u0022,\u005C\u0022commit_message\u005C\u0022:\u005C\u0022auto-merge $CIRCLE_BRANCH into master\u005C\u0022}\u0022 \u0022https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges\u0022\u000Acurl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash"
+                  "command" : "git fetch --unshallow origin master || git fetch origin master\u000Agit checkout master || git checkout -b master origin/master\u000Agit merge -m \u0022auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master\u0022 $CIRCLE_SHA1\u000Agit push origin master\u000Acurl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash"
                }
             }
          ]
@@ -98,7 +98,7 @@
             "checkout",
             {
                "deploy" : {
-                  "command" : "git rev-parse HEAD > head.txt\u000Acurl -f -s -S --request POST --header \u0022Authorization:token $GITHUB_ACCESS_TOKEN\u0022 --header \u0022Content-Type:application/json\u0022 --data-binary \u0022{\u005C\u0022base\u005C\u0022:\u005C\u0022master\u005C\u0022,\u005C\u0022head\u005C\u0022:\u005C\u0022`cat head.txt`\u005C\u0022,\u005C\u0022commit_message\u005C\u0022:\u005C\u0022auto-merge $CIRCLE_BRANCH into master\u005C\u0022}\u0022 \u0022https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges\u0022\u000Acurl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash"
+                  "command" : "git fetch --unshallow origin master || git fetch origin master\u000Agit checkout master || git checkout -b master origin/master\u000Agit merge -m \u0022auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master\u0022 $CIRCLE_SHA1\u000Agit push origin master\u000Acurl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash"
                }
             }
          ]
@@ -188,7 +188,7 @@
          "triggers" : [
             {
                "schedule" : {
-                  "cron" : "53 23 * * *",
+                  "cron" : "45 4 * * *",
                   "filters" : {
                      "branches" : {
                         "only" : [

@@ -22,5 +22,25 @@
       "docker kill chromedriver"
 
     ]
+  },
+  "github": {
+    "merger": 1,
+    "gaa": 1,
+
+    "build": [
+      "make test-deps"
+    ],
+    "tests": [
+      "docker run --name firefoxdriver -d --net=host -t quay.io/wakaba/firefoxdriver:stable /fx",
+      "TEST_WD_URL=http://localhost:9516 make test",
+      "docker logs firefoxdriver",
+      "docker kill firefoxdriver",
+
+      "docker run --name chromedriver -d --net=host -t quay.io/wakaba/chromedriver:chromium /cd",
+      "TEST_WD_URL=http://localhost:9515 make test",
+      "docker logs chromedriver",
+      "docker kill chromedriver"
+
+    ]
   }
 }
