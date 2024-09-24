@@ -97,24 +97,13 @@ sub new_session ($;%) {
         if defined $args{http_proxy_url};
     $session_args->{desiredCapabilities}->{proxy}->{sslProxy} = $args{https_proxy_url}->hostport
         if defined $args{https_proxy_url};
-
-    ## GeckoDriver fails to support capabilities.proxy
-    $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.type"} = 1;
-    if (defined $args{http_proxy_url}) {
-      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.http"} = $args{http_proxy_url}->host->to_ascii;
-      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.http_port"} = $args{http_proxy_url}->port;
-    }
-    if (defined $args{https_proxy_url}) {
-      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.ssl"} = $args{https_proxy_url}->host->to_ascii;
-      $session_args->{desiredCapabilities}->{alwaysMatch}->{'moz:firefoxOptions'}->{prefs}->{"network.proxy.ssl_port"} = $args{https_proxy_url}->port;
-    }
   } # proxy
   ## <https://bugs.chromium.org/p/chromium/issues/detail?id=736452>
   push @{$session_args->{desiredCapabilities}->{chromeOptions}->{args} ||= []},
       '--disable-dev-shm-usage';
-  $session_args->{capabilities} = {%{$session_args->{desiredCapabilities} or {}},
+  $session_args->{capabilities}->{alwaysMatch} = {%{$session_args->{desiredCapabilities} or {}},
                                    %{$session_args->{requiredCapabilities} or {}}};
-  $session_args->{capabilities}->{'goog:chromeOptions'} = delete $session_args->{capabilities}->{chromeOptions};
+  $session_args->{capabilities}->{alwaysMatch}->{'goog:chromeOptions'} = delete $session_args->{capabilities}->{alwaysMatch}->{chromeOptions};
 
   my $res;
   return Promise->resolve->then (sub {
