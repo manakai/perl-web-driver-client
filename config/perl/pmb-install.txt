@@ -1,4 +1,4 @@
-AnyEvent::Socket
+AnyEvent::Util
 Carp~1.50
 Digest::SHA~6.04
 MIME::Base64~3.16
