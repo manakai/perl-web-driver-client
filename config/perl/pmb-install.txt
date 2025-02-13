@@ -1,4 +1,4 @@
-AnyEvent~7.17
+AnyEvent::Handle
 Carp~1.50
 Digest::SHA~6.04
 MIME::Base64~3.16
@@ -9,5 +9,5 @@ Scalar::Util~1.68
 Socket~2.038
 Term::ANSIColor~5.01
 Term::Table~0.024
-Test::More~1.302209
+Test::Builder~1.302209
 Time::HiRes~1.9764
