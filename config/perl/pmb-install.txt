@@ -9,5 +9,5 @@ Scalar::Util~1.69
 Socket~2.038
 Term::ANSIColor~5.01
 Term::Table~0.024
-Test::More~1.302211
+Test::Builder~1.302211
 Time::HiRes~1.9764
