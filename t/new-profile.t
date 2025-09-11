@@ -13,7 +13,7 @@ test {
   }, sub {
     my $url = shift;
     my $go_url = Web::URL->parse_string ('/foo/bar.html', $url);
-    my $wd = Web::Driver::Client::Connection->new_from_url ($wd_url);
+    my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
     my $profile_path = '/tmp/' . rand;
     return $wd->new_session (profile_dir => $profile_path)->then (sub {
       my $session = $_[0];
