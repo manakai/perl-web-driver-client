@@ -8,23 +8,29 @@ test {
   my $c = shift;
   my $name = rand;
   my $value = rand;
+  my $profile_path = '/tmp/' . rand;
   return server ({
     '/foo/bar.html' => (encode_web_utf8 '<html><title>Test</title><body>' . rand),
   }, sub {
     my $url = shift;
     my $go_url = Web::URL->parse_string ('/foo/bar.html', $url);
     my $wd = Web::Driver::Client::Connection->new_from_url (wd_url);
-    my $profile_path = '/tmp/' . rand;
-    return $wd->new_session (profile_dir => $profile_path)->then (sub {
+    return $wd->new_session (
+      chrome_profile_dir => $profile_path,
+      firefox_profile_dir => "/tmp",
+    )->then (sub {
       my $session = $_[0];
       return $session->go ($go_url)->then (sub {
         my $res = $_[0];
-        return $session->set_cookie ($name => $value);
+        return $session->set_cookie ($name => $value, max_age => 3600*100);
       })->finally (sub {
         return $session->close;
       });
     })->then (sub {
-      return $wd->new_session (profile_dir => $profile_path);
+      return $wd->new_session (
+        chrome_profile_dir => $profile_path,
+        firefox_profile_dir => "/tmp",
+      );
     })->then (sub {
       my $session = $_[0];
       return $session->go ($go_url)->then (sub {

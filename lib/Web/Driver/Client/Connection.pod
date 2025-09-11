@@ -25,6 +25,16 @@ The URL of the TLS proxy (for HTTPS connections) used by the session's
 browser.  The value must be a L<Web::URL> object whose C<scheme> is
 C<http> and C<host> and C<port> identify the proxy server.
 
+=item chrome_profile_dir => $path_string
+
+The path to the directory of the Chrome user profile.  It can be a
+non-existing directory.
+
+=item firefox_profile_dir => $path_string
+
+The path to the directory of the Firefox user profile.  It must be an
+C<existing> directory.  It can be empty, however.
+
 =back
 
 The method returns a promise (L<Promise>) which is to be resolved with
@@ -64,7 +74,7 @@ Wakaba <wakaba@suikawiki.org>
 
 =head1 LICENSE
 
-Copyright 2016-2022 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2025 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
