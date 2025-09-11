@@ -326,6 +326,18 @@ sub click ($$) {
   });
 } # click
 
+sub value ($$$) {
+  my ($self, $element, $value) = @_;
+  return $self->http_post (['element', $element->{'element-6066-11e4-a52e-4f735466cecf'} || $element->{ELEMENT}, 'value'], {
+    text => '' . $value,
+    value => [split //, $value], # old
+  })->then (sub {
+    my $res = $_[0];
+    die $res if $res->is_error;
+    return undef;
+  });
+} # value
+
 sub close ($) {
   my $self = $_[0];
   $self->{closed} = 1;

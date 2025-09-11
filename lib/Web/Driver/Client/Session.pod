@@ -239,6 +239,16 @@ element.
 It returns a promise (L<Promise>) that is to be resolved when the
 action is done.
 
+=item $session->value ($element)->then (sub { ... })
+
+Set the element value (for a form control).
+
+The first argument must be a hash reference representing a Web
+element.
+
+It returns a promise (L<Promise>) that is to be resolved when the
+action is done.
+
 =item $session->http_get ($path_segments)->then (sub { $res = shift })
 
 Send a command using the session with the HTTP C<GET> method.
@@ -314,7 +324,7 @@ Thanks to nobuoka.
 
 =head1 LICENSE
 
-Copyright 2016-2021 Wakaba <wakaba@suikawiki.org>.
+Copyright 2016-2025 Wakaba <wakaba@suikawiki.org>.
 
 Copyright 2017 OND Inc. <https://ond-inc.com/>.
 
