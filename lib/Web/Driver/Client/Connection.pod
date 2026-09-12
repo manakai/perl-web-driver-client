@@ -30,6 +30,17 @@ C<http> and C<host> and C<port> identify the proxy server.
 The path to the directory of the Chrome user profile.  It can be a
 non-existing directory.
 
+=encoding utf8
+
+=item retry => $boolean
+
+C<retry =E<gt> 0> を指定すると、セッション作成の HTTP POST をアプリケーション
+レベルで繰り返しません。応答を失ってもサーバ側にセッションが作成されている
+可能性があるための指定です。全体の制限時間は従来どおり 180 秒です。
+失敗時は接続を中断してエラーを返します。ID が不明なセッションを推測して
+削除することはありません。サーバ側に残ったセッションの回収は呼び出し側の
+サーバ管理で行う必要があります。省略時と真を指定した場合は従来の動作です。
+
 =item firefox_profile_dir => $path_string
 
 The path to the directory of the Firefox user profile.  It must be an
