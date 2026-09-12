@@ -1,6 +1,8 @@
-=head1 
+=encoding utf8
 
-XXX
+=head1 NAME
+
+Web::Driver::Client::Connection - WebDriver セッションの作成
 
 =over 4
 
@@ -29,8 +31,6 @@ C<http> and C<host> and C<port> identify the proxy server.
 
 The path to the directory of the Chrome user profile.  It can be a
 non-existing directory.
-
-=encoding utf8
 
 =item retry => $boolean
 
