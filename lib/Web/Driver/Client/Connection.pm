@@ -118,6 +118,20 @@ sub new_session ($;%) {
 
   my $res;
   return Promise->resolve->then (sub {
+    # A session can be created even if its response is delayed or lost.
+    # Callers can disable replay while retaining the overall 180-second limit.
+    if (defined $args{retry} and not $args{retry}) {
+      my $pending = promised_timeout {
+        return $self->http_post (['session'], $session_args);
+      } 60*3;
+      return $pending->catch (sub {
+        my $error = $_[0];
+        return $self->http_client->abort
+            (message => '|new_session| failed without retry')->then (sub {
+          die $error;
+        });
+      });
+    }
     ## ChromeDriver sometimes hungs up without returning any response
     ## or closing connection.
     return promised_wait_until {
@@ -142,6 +156,7 @@ sub new_session ($;%) {
       });
     } timeout => 60*3;
   })->then (sub {
+    $res = $_[0] if defined $args{retry} and not $args{retry};
     die $res if $res->is_error;
     my $json = $res->json;
     my $session_id = $json->{sessionId};
