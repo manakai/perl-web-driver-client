@@ -1,9 +1,9 @@
-AnyEvent~7.17
+AnyEvent::Socket
 Carp~1.50
 Digest::SHA~6.04
 MIME::Base64~3.16
 Math::BigInt~2.005003
-Net::SSLeay~1.96
+Net::SSLeay
 Path::Tiny~0.150
 Scalar::Util~1.70
 Socket~2.043
