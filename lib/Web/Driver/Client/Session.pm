@@ -63,14 +63,24 @@ sub execute ($$$;%) {
     if (not defined $self->{async_script_timeout} or
         $self->{async_script_timeout} != $timeout) {
       return $self->http_post (['timeouts'], {
+        ## Old Chrome's protocol
         type => 'script',
         ms => $timeout,
+
+        ## WebDriver standard
+        script => $timeout,
       })->then (sub {
         die $_[0] if $_[0]->is_error;
         $self->{async_script_timeout} = $timeout;
       });
     }
   })->then (sub {
+    ## For debugging:
+  #  return $self->http_get (['timeouts'], {
+  #})->then (sub {
+  #    die $_[0] if $_[0]->is_error;
+  #  });
+  #})->then (sub {
     return $self->http_post (['execute', 'async'], {
       script => q{
         Promise.resolve().then(()=>{
